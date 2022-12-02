@@ -38,8 +38,8 @@ npx hardhat compile
 
 yarn add -D @uniswap/v3-periphery@1.4.1
 
-npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/VkI6gaibszVwSRaLk5KVSkYKe1YPmiSa
-npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/VkI6gaibszVwSRaLk5KVSkYKe1YPmiSa --fork-block-number 16091924
+npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/<ALCHEMY_API_KEY>
+npx hardhat node --fork https://eth-mainnet.alchemyapi.io/v2/<ALCMEHY_API_KEY> --fork-block-number 16091924
 npx hardhat test 
 
 
