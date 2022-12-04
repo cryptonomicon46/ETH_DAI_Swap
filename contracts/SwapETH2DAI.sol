@@ -67,7 +67,6 @@ contract SwapETH2DAI {
     /// @param amountIn  fixed amount of token input DAI or WETH
     /// @param _amountOut maximum possible output of WET or DAI received
     ///
-
     function _swapWETHForDai(uint amountIn) internal returns (uint _amountOut) 
     {
         ISwapRouter.ExactInputSingleParams memory params = 

@@ -127,73 +127,7 @@ describe("SwapETH2DAI", function () {
  
     });
 
-    it("Send 10 ETH to the contract and check ETH/DAI/contract balances", async function () {
-        const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
-
-
-    //     await expect(() => owner.sendTransaction({to: swapETH2DAI.address, value: parseEther("10")}))
-    //     .to.changeEtherBalance(owner, parseEther("-10"));
-        
-    // const contract_bal = await ethers.provider.getBalance(swapETH2DAI.address);
-    // //  console.log("Contract balance after transfer:", ethers.utils.formatEther(contract_bal));
-
-    //   const ETHBalance = await swapETH2DAI.connect(owner).getETHBalance();
-    //   const DAIBalance = await swapETH2DAI.connect(owner).getDAIBalance();
-
-
-    //   expect(contract_bal).to.be.equal(parseEther('10'));
-    // //   expect(ETHBalance).to.be.equal(parseEther('10'));
-    //   expect(DAIBalance).to.be.equal(parseEther('0'));
-
-    });
-
-
-
-
-
-    it("Owner sends 10 ETH, Execute a swap on all 10 ETH, check Contract/ETH/DAI balances and withdrawal", async function () {
-        const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
-
-
-        // await expect(() => owner.sendTransaction({to: swapETH2DAI.address, value: parseEther("10")}))
-        // .to.changeEtherBalance(owner, parseEther("-10"));
-        
-        // const contract_bal = await ethers.provider.getBalance(swapETH2DAI.address);
-        //  console.log("Contract balance after transfer:", ethers.utils.formatEther(contract_bal));
-
-        // const owner_DAI_bal_before = await swapETH2DAI.connect(owner).getDAIBalance();
-
-        //     // // /* Execute the swap */
-        // // await expect(ETH.connect(owner).approve(SwapRouterAddress,parseEther("10"))).
-        // // to.emit(swapETH2DAI,"Approval");
-
-        // await ETH.approve(SwapRouterAddress,parseEther("10"));
-        // // console.log(tx);
-        // await swapETH2DAI.connect(owner).swapETHForDai({ value: ethers.utils.parseEther("10") })
-
-        
-        // // /* Test that we now have more DAI than when we started */
-        // // let owner_DAI_bal_after = await DAI.balanceOf(owner.address)
-
-
-        // const owner_DAI_bal_after = await swapETH2DAI.connect(owner).getDAIBalance();
-
-        // const DAIBalanceAfter = Number(ethers.utils.formatUnits
-        //     (owner_DAI_bal_after, 18))
-
-        // const DAIBalanceBefore = Number(ethers.utils.formatUnits
-        //         (owner_DAI_bal_before, 18))
-
-        // console.log("DAI Balance after:",DAIBalanceAfter);
-        // expect(DAIBalanceAfter).is.greaterThan(DAIBalanceBefore);
-    });
-
-    // it("Owner sends 10 ETH, Execute a swap on 5 ETH, check Contract/ETH/DAI balances and withdrawal of ETH/DAI and ETH refund", async function () {});
-
-
-    // it("Check for malicious contract trying to reenter and withdraw contract balance", async function () {});
-
-
+  
 
 
 });
