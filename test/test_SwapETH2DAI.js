@@ -87,7 +87,7 @@ describe("SwapETH2DAI", function () {
 
   });
 
-    it("Owner tries to swap <0.1 ETH , operatation must revert", async function () {
+    it("Owner tries to swap <0.1 ETH , operatation must revert with a message!", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
     
         await expect(swapETH2DAI.SwapETHToDai({ value: parseEther("0.1") })).
@@ -96,7 +96,7 @@ describe("SwapETH2DAI", function () {
  
     });
 
-    it("Owner tries to swap > 1 ETH to contract, confirm the SwapCompleted", async function () {
+    it("Owner tries to swap > 0.1 ETH, confirm that SwapCompleted is emitted!", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
     
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
@@ -112,7 +112,7 @@ describe("SwapETH2DAI", function () {
  
     });
 
-    it("Owner tries to swap > 1 ETH to contract, swap must complete successfully", async function () {
+    it("Owner tries to swap > 0.1 ETH, swap must complete successfully, check value in the emitted event, check DAI balance of the owner!", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
     
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
