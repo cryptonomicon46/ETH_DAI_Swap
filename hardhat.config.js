@@ -2,10 +2,13 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const URL_GOERLI = process.env.URL_GOERLI;
-const GOERLI_PROJECT_ID= process.env.API_GOERLI;
-const API_KEY = process.env.ETH_API_KEY;
-const ALCHEMY_PROJECT_ID = process.env.ALCHEMY_PROJECT_ID;
+const GOERLI_URL_ALCHEMY = process.env.GOERLI_URL_ALCHEMY;
+const GOERLI_ALCHEMY_KEY = process.env.GOERLI_ALCHEMY_KEY;
+const MAINNET_URL_ALCHEMY = process.env.MAINNET_URL_ALCHEMY;
+const MAINNET_ALCHEMY_KEY = process.env.MAINNET_ALCHEMY_KEY;
+const ETH_API_KEY = process.env.ETH_API_KEY;
+const MAINNET_FORK_URL = process.env.MAINNET_FORK_URL;
+
 // require('hardhat-ethernal');
 
 // This is a sample Hardhat task. To learn how to create your own go to
@@ -43,12 +46,13 @@ module.exports = {
 
     hardhat: {
         forking: {
-          url: "https://eth-mainnet.alchemyapi.io/v2/" + ALCHEMY_PROJECT_ID,
-  
+            url: `${MAINNET_FORK_URL}`,
+            accounts: [`0x${PRIVATE_KEY}`]
+
         }
       },
     goerli: {
-      url: "https://goerli.infura.io/v3/" + ALCHEMY_PROJECT_ID,
+      url: `${GOERLI_URL_ALCHEMY}${GOERLI_ALCHEMY_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
     }
 
