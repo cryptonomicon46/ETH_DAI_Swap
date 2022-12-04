@@ -7,6 +7,7 @@ import "hardhat/console.sol";
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
+import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 contract SwapETH2DAI {
     ISwapRouter public immutable swapRouter;
@@ -40,12 +41,22 @@ contract SwapETH2DAI {
     ///tokens to exact amountOutDAI
     /// amountInETH should be less than owener's ETH Balance
     /// owner's ETH balance should be greater than 0.1 ether
-    /// @param amountInETH input ETH amount to swap to DAI
-    function swapETHForDai(uint amountInETH) external payable returns (uint amountOutDAI) 
-    {   
-       
-        require(amountInETH <= ETHBalanceOf[msg.sender] && ETHBalanceOf[msg.sender]> 0.1 ether, "INVALID_SWAP_OPERATION");
+    // function swapETHForDai(uint amountInETH) external payable returns (uint amountOutDAI) 
+      function swapETHForDai() external payable returns (uint amountOutDAI) 
+  {   
+        require(msg.value > 0.1 ether, "ETH_VALUE_TOO_LOW");
+        uint amountInETH = msg.value;
+        // require(msg.value <= ETHBalanceOf[msg.sender] && ETHBalanceOf[msg.sender]> 0.1 ether, "INVALID_SWAP_OPERATION");
+        console.log("amountInETH:", amountInETH);
+
+        // (bool success, ) = ETH.call(abi.encodeWithSelector(IERC20.approve.selector, address(swapRouter), amountInETH));
+        // require(success);
+        // console.log("Router contract Approval success");
+        console.log("ETH Balance before:",ETHBalanceOf[msg.sender]);
+
         ETHBalanceOf[msg.sender] -= amountInETH;
+        console.log("ETH Balance after:",ETHBalanceOf[msg.sender]);
+
         ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
                 tokenIn : ETH,
@@ -58,7 +69,12 @@ contract SwapETH2DAI {
                 sqrtPriceLimitX96: 0
             });
            
+        console.log("params");
+
         amountOutDAI = ISwapRouter(swapRouter).exactInputSingle(params);
+        console.log("amountOutDAI:", amountOutDAI);
+
+   
         emit SwapETHForDai(amountInETH, amountOutDAI);
 
         DAIBalanceOf[msg.sender] += amountOutDAI;        
