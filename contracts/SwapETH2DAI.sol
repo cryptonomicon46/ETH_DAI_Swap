@@ -5,7 +5,6 @@ pragma abicoder v2;
 // import "./UniSwap.sol";
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import '@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
  
@@ -20,58 +19,71 @@ function withdraw(uint) external payable;
 }
 contract SwapETH2DAI {
     ISwapRouter public immutable swapRouter;
-    IWETH public immutable weth;
-    IERC20 public immutable dai;
+
+    address public immutable DAI;
+    address public immutable WETH9;
     uint24 constant poolFee = 3000;
-    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    address constant ETH = 0x73bFE136fEba2c73F441605752b2B8CAAB6843Ec;
-    address constant SwapRouterAddress = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
+
     // UniSwap private uni = new UniSwap();
-    event SwapCompleted(uint amountInETH,uint amountOutDAI);
+    event SwapCompleted(uint _amount);
     event Received(address _sender, uint _value);
-    constructor() payable {
+    constructor(address DAI_, 
+            address WETH9_,
+              ISwapRouter _swapRouter) {
 
-        swapRouter = ISwapRouter(SwapRouterAddress);
-        weth = IWETH(WETH);
-        dai = IERC20(DAI);
-        }
+        DAI = DAI_;
+        WETH9 = WETH9_; 
+        swapRouter = _swapRouter;
 
-    /// @notice swapETHforDai 
-    ///Owner transfers ETH as msg.value, the function wraps the needed ETH ->WETH9 
-    /// completes the swap operation and updates the owener's DAI balance
-    /// @dev emits event SWAP_COMPLETE(uint amountInETH,uint amountOutDAI) 
-    /// upon successful completion of the swap of ETH to DAI. 
-      function swapETHForDai() external payable {
+    }
+
+
+    /// @notice SwapETHToDai takes in the use's ETH and wraps to WETH before the swap operation to DAI
+    /// @dev returns true
+    ///
+    function SwapETHToDai() external payable returns (uint amountOut) {
         require(msg.value > 0.1 ether, "ETH_VALUE_TOO_LOW");
-        require(msg.sender != address(0),"INVALID_SENDER_ADDRRESS");
+        console.log("Input ETH Amount=", msg.value);
+        IWETH(WETH9).deposit{value: msg.value }();
 
-        weth.deposit{value:msg.value }();
-        uint amountInWETH = IERC20(WETH).balanceOf(msg.sender);
-        IERC20(WETH).transferFrom(WETH,address(this),amountInWETH);
-        console.log("Balance of address(this)",IERC20(WETH).balanceOf(address(this)));
-        weth.approve(address(swapRouter), msg.value);
-        uint getRouterAllowance = IERC20(WETH).allowance(address(this),address(swapRouter));
-        console.log("Print Router's allowance",getRouterAllowance);
+        IERC20(WETH9).approve(address(this), msg.value);
+        uint amountInWETH = IERC20(WETH9).balanceOf(msg.sender);
 
-           ISwapRouter.ExactInputSingleParams memory params = 
+        IERC20(WETH9).transferFrom(WETH9,address(this),amountInWETH);
+        amountInWETH = IERC20(WETH9).balanceOf(address(this));
+        console.log("Balance of address(this) after",amountInWETH);
+      
+        IERC20(WETH9).approve(address(swapRouter), amountInWETH );
+        uint getRouterAllowance = IERC20(WETH9).allowance(address(this),address(swapRouter));
+        console.log("Swap Router's allowance updated to:",getRouterAllowance);
+
+        amountOut = _swapWETHForDai(amountInWETH);
+        console.log("amountOut:", amountOut);
+        emit SwapCompleted(amountOut);
+    }
+
+    /// @notice swapWETHforDai_EIS (EIS-ExactInputSingle) swaps amountIn tokens to exact amountOut
+    /// using the DAI/WETH9 0.3% pool by calling the 
+    /// @param amountIn  fixed amount of token input DAI or WETH
+    /// @param _amountOut maximum possible output of WET or DAI received
+    ///
+
+    function _swapWETHForDai(uint amountIn) internal returns (uint _amountOut) 
+    {
+        ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
-                tokenIn : WETH,
+                tokenIn : WETH9,
                 tokenOut : DAI,
                 fee: poolFee,
                 recipient: msg.sender,
                 deadline: block.timestamp,
-                amountIn: amountInWETH,
+                amountIn: amountIn,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
             });
-           
-        uint amountOutDAI = ISwapRouter(swapRouter).exactInputSingle(params);
-        console.log("Swap completed and DAI received =", amountOutDAI);
-        // emit SwapCompleted(msg.value, amountOutDAI);
-        // console.log("DAI tokens received", amountOutDAI);
-        // // // //Transfer owner's DAI balances
-        // console.log("Sender's DAI bal after wrap:", IERC20(DAI).balanceOf(msg.sender));    
+            //Executes the swap
+        _amountOut = ISwapRouter(swapRouter).exactInputSingle(params);
+        console.log("amountOut=", _amountOut);     
     }
 
    /// @notice for empty calldata

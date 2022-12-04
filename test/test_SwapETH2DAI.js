@@ -40,18 +40,15 @@ describe("SwapETH2DAI", function () {
 
     [owner,addr1,addr2] = await ethers.getSigners();
     const  SwapETH2DAI = await ethers.getContractFactory("SwapETH2DAI");
-    // const swapETH2DAI = await SwapETH2DAI.deploy(DAI_ADDRESS,
-    //                                                     WETH_ADDRESS,
-    //                                                         SwapRouterAddress);
-    const swapETH2DAI = await SwapETH2DAI.deploy();
+    const swapETH2DAI = await SwapETH2DAI.deploy(DAI_ADDRESS,
+                                                        WETH_ADDRESS,
+                                                            SwapRouterAddress);
     await swapETH2DAI.deployed();
-    // const ETH = new ethers.Contract(ETH_ADDRESS, ercAbi, owner);
     const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, owner);
     const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
 
     console.log("Owner:", owner.address);
     console.log("Owner ETH Balance:",owner.address.balance);
-
     console.log("DAI Contract Address:",DAI.address);
     console.log("SwapRouter Address:", )
     return {swapETH2DAI, owner, WETH,DAI};
@@ -93,7 +90,7 @@ describe("SwapETH2DAI", function () {
     it("Owner tries to swap <0.1 ETH , operatation must revert", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
     
-        await expect(swapETH2DAI.swapETHForDai({ value: parseEther("0.1") })).
+        await expect(swapETH2DAI.SwapETHToDai({ value: parseEther("0.1") })).
         to.be.revertedWith("ETH_VALUE_TOO_LOW");
 
  
@@ -104,12 +101,28 @@ describe("SwapETH2DAI", function () {
     it("Owner tries to swap > 1 ETH to contract, swap must complete successfully", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
     
-        await swapETH2DAI.swapETHForDai({value: parseEther("10")});
-
-
-    // await expect(swapETH2DAI.swapETHForDai({ value: parseEther("1") })).
-    // to.emit(swapETH2DAI,"SwapCompleted");
+        const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
+        const DAIBalanceBefore = Number(ethers.utils.formatUnits
+            (owner_DAI_bal_before, 18))
     
+    // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
+
+    const tx =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") });
+    const rc = await tx.wait(); // 0ms, as tx is already confirmed
+    const event = rc.events.find(event => event.event === 'SwapCompleted');
+    const [value] = event.args;
+    console.log("SwapCompleted event value:",value);
+
+    const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
+    const DAIBalanceAfter = Number(ethers.utils.formatUnits
+        (owner_DAI_bal_after, 18))
+
+
+    // console.log(formatEther(owner_DAI_bal_after));
+
+        expect(DAIBalanceAfter).to.be.greaterThan(DAIBalanceBefore);
+
+        expect(value).to.be.equal(owner_DAI_bal_after);
 
  
     });
