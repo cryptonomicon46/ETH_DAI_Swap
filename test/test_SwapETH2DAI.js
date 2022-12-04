@@ -96,7 +96,21 @@ describe("SwapETH2DAI", function () {
  
     });
 
+    it("Owner tries to swap > 1 ETH to contract, confirm the SwapCompleted", async function () {
+        const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
+    
+        const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
+        const DAIBalanceBefore = Number(ethers.utils.formatUnits
+            (owner_DAI_bal_before, 18))
+    
+    // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
 
+    await expect(swapETH2DAI.SwapETHToDai({ value: parseEther("1") })).
+    to.emit(swapETH2DAI,"SwapCompleted");
+
+    
+ 
+    });
 
     it("Owner tries to swap > 1 ETH to contract, swap must complete successfully", async function () {
         const {swapETH2DAI, owner,WETH,DAI} = await loadFixture(deploySimpleSwapFixture);
