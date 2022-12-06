@@ -109,3 +109,11 @@ npx hardhat node --fork https://eth-mainnet.g.alchemy.com/v2/VkI6gaibszVwSRaLk5K
 
 
 npx hardhat node https://eth-goerli.g.alchemy.com/v2/5xH3uo4WsYGg7XQSRqktvZWVyrFM5_Fu
+
+
+npx hardhat test --grep one
+
+npx hardhat test ./test/test_SwapETH2DAI.js
+npx hardhat test ./test/test_SwapETH2DAI2USDC.js --grep ContractDeployed
+
+npx hardhat test ./test/test_SwapETH2DAI2USDC.js --grep "USDC amountOut" --network localhost
