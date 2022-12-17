@@ -39,14 +39,26 @@ contract SwapETH2DAI {
 
 
     /// @notice SwapETHToDai takes in the use's ETH and wraps to WETH before the swap operation to DAI
-    /// @dev returns true
-    ///
-    function SwapETHToDai() external payable returns (uint amountOut) {
-        require(msg.value > 0.1 ether, "ETH_VALUE_TOO_LOW");
-        console.log("Input ETH Amount=", msg.value);
-        IWETH(WETH9).deposit{value: msg.value }();
+    /// @dev returns the excess value ETH back to the sender (amountToUse - msg.value)    
+    /// Do not use the IWETH interface, define your own ERC20 contract 
 
+    function SwapETHToDai(uint amountToUse) external payable returns (uint amountOut) {
+        require(msg.value > 0.1 ether, "ETH_VALUE_TOO_LOW");
+
+        require(msg.value >= amountToUse, "AmountTOSwap_Error");
+        console.log("Input ETH Amount=", msg.value);
+
+
+        //How to convert the incoming ETH to WETH?
+        //Create an ERC20 Token called Fusion token. 
+        //User sends ETH to the Fusion ERC20 and gets FUSION tokens.
+        // Create a pool for FUSION/DAI on Uniswap test net
+        //Use this pool to swap out FUSION for DAI
+        // Return DAI to the owner along with any ETH balance that wasn't used 
+        
+        IWETH(WETH9).deposit{value: msg.value }();
         IERC20(WETH9).approve(address(this), msg.value);
+
         uint amountInWETH = IERC20(WETH9).balanceOf(msg.sender);
 
         IERC20(WETH9).transferFrom(WETH9,address(this),amountInWETH);
@@ -60,6 +72,14 @@ contract SwapETH2DAI {
         amountOut = _swapWETHForDai(amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
+        
+        //Refund excess ETH to User
+        uint refundAmount = msg.value - amountToUse;
+       (bool sent, ) = msg.sender.call{value: refundAmount}("");
+        require(sent, "Refund_Failed");
+
+        //Refund event
+
     }
 
     /// @notice swapWETHforDai_EIS (EIS-ExactInputSingle) swaps amountIn tokens to exact amountOut
@@ -86,8 +106,8 @@ contract SwapETH2DAI {
     }
 
    /// @notice for empty calldata
-    receive() external payable {}
+    // receive() external payable {}
 
     /// @notice when no other function matches, not even receive
-    fallback() external payable{}
+    // fallback() external payable{}
     }
