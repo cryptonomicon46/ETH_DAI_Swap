@@ -6,36 +6,61 @@ pragma abicoder v2;
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
+import "@openzeppelin/contracts/math/SafeMath.sol";
  
-interface IWETH is IERC20 {
-
-/// @notice deposit WETH9 from the sender
-function deposit() external payable;
-
-/// @notice withdraw WETH9 
-function withdraw(uint) external payable;
-
-}
-contract SwapETH2DAI {
+contract SwapETH2DAI is FusionToken{
     ISwapRouter public immutable swapRouter;
 
     address public immutable DAI;
     address public immutable WETH9;
     uint24 constant poolFee = 3000;
+    address private _owner;
+    mapping (address => uint) private _depositBal;
+
 
     // UniSwap private uni = new UniSwap();
     event SwapCompleted(uint _amount);
     event Received(address _sender, uint _value);
+    event Deposit(address _payee, uint _value);
+    event Withdraw(address _payee, uint _value);
     constructor(address DAI_, 
             address WETH9_,
-              ISwapRouter _swapRouter) {
+              ISwapRouter _swapRouter) FusionToken(){
 
         DAI = DAI_;
-        WETH9 = WETH9_; 
         swapRouter = _swapRouter;
+        _owner = msg.sender;
 
     }
+
+    /// @notice owner
+    /// @return owner who deployed the SwapETH2DAI contract
+    function owner() external view returns (address) {
+        return _owner;
+    }
+
+    ///@notice checks if the msg.sender is the owner who deployed this contract
+    modifier onlyOwner() {
+        require(_owner == msg.sender, "Caller is not the owner");
+        _;
+    }
+    function _deposit(address _payee) internal payable onlyOwner() {
+        require(msg.value>= "0.1 ether", "INVALID_DEPOSIT_AMOUNT");
+
+        _depositBal[_payee] = _depositBal[_payee].add(msg.value);
+        Deposit(_payee,msg.value);
+    }
+
+
+        function _withdraw(address _payee) internal payable onlyOwner() {
+        require(_payee != address(0),"INVALID_ACCOUNT");
+        require(_depositBal[_payee]>= 0,"NOTHING_TO_WITHDRAW");
+        uint _bal  = _depositBal[_payee];
+        _depositBal[_payee] = 0;
+        (bool success, ) = payable(_payee).call{value: _bal};
+        require(success);
+        Withdraw(_payee,_bal);
+    } 
 
 
     /// @notice SwapETHToDai takes in the use's ETH and wraps to WETH before the swap operation to DAI
@@ -51,11 +76,14 @@ contract SwapETH2DAI {
 
         //How to convert the incoming ETH to WETH?
         //Create an ERC20 Token called Fusion token. 
-        //User sends ETH to the Fusion ERC20 and gets FUSION tokens.
+        //Upon contract creation, mint FUSION tokens to the owner
+        //User sends ETH to the Swap contract, update the balances mapping
+        //Create a FUSION/DAI pool on Uniswap testnet
+        //Complete the swap  Fusion ERC20 and gets FUSION tokens.
         // Create a pool for FUSION/DAI on Uniswap test net
         //Use this pool to swap out FUSION for DAI
         // Return DAI to the owner along with any ETH balance that wasn't used 
-        
+
         IWETH(WETH9).deposit{value: msg.value }();
         IERC20(WETH9).approve(address(this), msg.value);
 
