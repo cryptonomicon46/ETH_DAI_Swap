@@ -136,8 +136,32 @@ it("Mint and Approve: Owner mints tokens, sets allowance for addr1, addr1 transf
 })
 
 
-it("Mint and Approve and Transfer: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
+it("Transfer: Owner mints tokens, and transfers from tokens to addr1 ", async function() {
 
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.mint(1000)).
+    to.emit(fusionToken,"Transfer");
+    
+    const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+    await expect(fusionToken.transfer(addr1.address,250)).
+    to.emit(fusionToken,"Transfer");
+
+    const addr1_bal = await fusionToken.balanceOf(addr1.address);
+    // console.log(ownerBal);
+    expect(addr1_bal).to.be.equal(250);
+
+    const ownerNewBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerNewBal).to.be.equal(750);
+
+
+    
+})
+
+it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
     const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.mint(1000)).
     to.emit(fusionToken,"Transfer");
@@ -153,7 +177,7 @@ it("Mint and Approve and Transfer: Owner mints tokens, sets allowance for addr1,
     const allowance_addr1 = await fusionToken.allowance(addr1.address);
     expect(allowance_addr1).to.equal(500);
 
-    await expect(fusionToken.connect(addr1).transferFrom(addr2.address, 250)).
+    await expect(fusionToken.connect(addr1).transferFrom(owner.address, addr2.address, 250)).
     to.emit(fusionToken,"Transfer");
 
     const new_allowance_addr1 = await fusionToken.allowance(addr1.address);
@@ -164,7 +188,11 @@ it("Mint and Approve and Transfer: Owner mints tokens, sets allowance for addr1,
     // console.log(ownerBal);
     expect(addr2_bal).to.be.equal(250);
 
-    
+
+    const new_ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(new_ownerBal).to.be.equal(750);
+
 })
 
 });

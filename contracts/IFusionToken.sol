@@ -43,9 +43,10 @@ interface IFusionToken {
  
 
     /// @notice transferFrom, will transfer amount from owner to recipient, tigger the Transfer event, return bool  (pass/fail)
+    /// @param owner , receiver of the tokens
     /// @param recipient , receiver of the tokens
     /// @param amount , amount received by the recipient 
-    function transferFrom(address recipient, uint amount) external  returns (bool);
+    function transferFrom(address owner, address recipient, uint amount) external  returns (bool);
    
     /// @notice transfer, will transfer amount to recipient, tigger the Transfer event, return bool  (pass/fail)
     /// @param recipient, receives tokens

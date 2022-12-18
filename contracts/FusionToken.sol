@@ -104,11 +104,12 @@ contract FusionToken is IFusionToken {
     /// @param amount the allowance amount
     /// @dev calls the internal _transfer function , adjusts the allowance, emits Transfer and Approval events.
     function transferFrom(
+        address sender,
         address recipient,
         uint amount
     ) external override returns (bool) {
-        _transfer(_owner,recipient,amount);
-        _approve(_owner, msg.sender, _allowances[_owner][msg.sender].sub(amount));
+        _transfer(sender,recipient,amount);
+        _approve(sender, msg.sender, _allowances[sender][msg.sender].sub(amount));
         return true;
     }
 
