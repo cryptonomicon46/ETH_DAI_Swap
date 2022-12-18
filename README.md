@@ -42,6 +42,8 @@ npx hardhat test ./test/test_SwapETH2DAI2USDC.js --grep "Contract Deployed" --ne
 npx hardhat test ./test/test_SwapETH2DAI2USDC.js --grep "USDC amountOut" --network localhost
 
 
+npx hardhat test ./test/test_FusionToken.js --network localhost
+
 
   Goerli DAI/ETH POOL 
   https://info.uniswap.org/#/pools/0x60594a405d53811d3bc4766596efd80fd545a270

@@ -8,7 +8,7 @@ interface IFusionToken {
     /// @dev Transfer event triggered when 'amount' is transferred to 'recipient' along with ETH 'value' sent
     /// 'value' can be left as 0  
     /// Emitted from mint, burn, transferFrom, transfer, transferFrom_Wei, transfer_Wei functions
-    event Transfer(address recipient, uint amount, uint value);
+    event Transfer(address recipient, uint amount);
 
     /// @dev Approval event triggered when allowance for 'spender' on behalf of 'owner' is updated to 'amount' 
     /// emitted from allowance, approve functions
@@ -18,7 +18,13 @@ interface IFusionToken {
 
     /// @notice totalSupply returns the total supply of the minted Fusion Token
     function totalSupply() external view returns (uint);
+
+    /// @notice name returns the name of the token
+    function name() external view returns (string memory);
     
+
+    /// @notice symbol returns the symbool of the token
+    function symbol() external view returns (string memory);
 
    /// @notice decimal the decimal value for the token, by default set to 18 to mimic ETH to WEI conversion
     ///
@@ -31,17 +37,15 @@ interface IFusionToken {
 
 
     /// @notice allowance, sets the allowance for spender on behalf of owner, emits Approval event
-    /// @param owner ,  account owner
     /// @param spender , account that plans to spend on behalf of the owner
-    function allowance(address owner, address spender) external view returns (uint);
+    function allowance(address spender) external view returns (uint);
 
  
 
     /// @notice transferFrom, will transfer amount from owner to recipient, tigger the Transfer event, return bool  (pass/fail)
-    /// @param owner , account from which tokens are sent
     /// @param recipient , receiver of the tokens
     /// @param amount , amount received by the recipient 
-    function transferFrom(address owner, address recipient, uint amount) external  returns (bool);
+    function transferFrom(address recipient, uint amount) external  returns (bool);
    
     /// @notice transfer, will transfer amount to recipient, tigger the Transfer event, return bool  (pass/fail)
     /// @param recipient, receives tokens
