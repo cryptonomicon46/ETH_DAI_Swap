@@ -66,34 +66,38 @@ contract FusionToken is IFusionToken {
     }
    
     /// @notice mint, external mint function, mints tokens to the owner's account
+    ///@param account, the account that received the minted tokens
     /// @param amount , minted amount
     /// @return bool, true if the operation succeeds
-    function mint(uint amount) external onlyOwner returns (bool) {
-        _mint(amount);
+    function mint(address account,uint amount) external override onlyOwner returns (bool) {
+        _mint(account,amount);
         return true;
     }
     /// @notice _mint, internal function that handles the mint operation, checks, events to the owner
-    /// @param amount , minted amount
-    function _mint(uint amount) internal virtual  {
+    /// @param account, receiver of the tokens
+    /// @param amount , amount of tokens minted
+    function _mint(address account,uint amount) internal virtual  {
         require (amount<= _totalSupply,"INVALID_MINT_AMOUNT");
-         _balance[_owner] = _balance[_owner].add(amount);
+         _balance[account] = _balance[account].add(amount);
         _totalSupply = _totalSupply.add(amount);
-        emit Transfer(_owner,amount );
+        emit Transfer(account,amount );
     }
 
     /// @notice burn, external burn function, will burn tokens from the owner's account
+    ///@param account, the account from which tokens will be burned
     /// @param amount , the amount of tokens to be burned
     /// @return boolean, returns true if the operation succeeds
-    function burn(uint amount) external onlyOwner returns (bool) {
-        _burn(amount);
+    function burn(address account, uint amount) external override onlyOwner returns (bool) {
+        _burn(account, amount);
         return true;
     }
 
     /// @notice _burn, internal burn function, handles the events and checks before burning tokesn from owner's account
-    /// @param amount , the amount of tokens to be burned
-    function _burn(uint amount) internal virtual {
-        require(_balance[_owner]>= amount, "INSUFFICIENT_BALANCE_TO_BURN");
-        _balance[_owner] = _balance[_owner].sub(amount);
+   ///@param account, the account from which tokens will be burned
+   /// @param amount , the amount of tokens to be burned
+    function _burn(address account, uint amount) internal virtual {
+        require(_balance[account]>= amount, "INSUFFICIENT_BALANCE_TO_BURN");
+        _balance[account] = _balance[account].sub(amount);
         _totalSupply = _totalSupply.sub(amount);
         emit Transfer(address(0),amount );
 

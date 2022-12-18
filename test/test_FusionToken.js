@@ -10,6 +10,8 @@ const { parse } = require("dotenv");
 
 const TOTAL_SUPPLY = 100000;
 const DECIMAL = 18;
+const NAME = "Fusion";
+const SYMBOL = "ION";
 
 // We connect to the Contract using a Provider, so we will only
 // have read-only access to the Contract
@@ -38,7 +40,18 @@ describe("Fusion Token Tests", function () {
     expect(fusionToken.address).to.be.a.properAddress;
   });
 
+  it("Name: check the name of the token", async function () {
+    
+    const {fusionToken} = await loadFixture(deployTokenFixture);
+    expect(await fusionToken.name()).to.be.equal(NAME);
+  });
    
+
+  it("Symbol: check the symbol of the token", async function () {
+    
+    const {fusionToken} = await loadFixture(deployTokenFixture);
+    expect(await fusionToken.symbol()).to.be.equal(SYMBOL);
+  });
 
   it("Owner intial balance: check owner's initial balance", async function () {
     
@@ -71,8 +84,8 @@ it("Check owner address: Confirm the contract owner address.", async function() 
 })
 
 it("Mint Fail: Addr1 account tries to mint tokens", async function() {
-    const {fusionToken, owner,addr1, addr2} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.connect(addr1.address).mint(1000)).
+    const {fusionToken,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(addr1).mint(addr1.address, 1000)).
     to.be.revertedWith("Caller is not the owner");
 
 
@@ -80,7 +93,7 @@ it("Mint Fail: Addr1 account tries to mint tokens", async function() {
 
 it("Mint Success: Owner is allowed to mint tokens, check owner balance", async function() {
     const {fusionToken, owner} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.mint(1000)).
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
 
      const ownerBal = await fusionToken.balanceOf(owner.address);
@@ -89,10 +102,34 @@ it("Mint Success: Owner is allowed to mint tokens, check owner balance", async f
 
 })
 
+
+it("Burn Fail: Burn operation can only be initiated by the deployer", async function(){
+    const {fusionToken,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(addr1).burn(addr1.address, 1000)).
+    to.be.revertedWith("Caller is not the owner");
+})
    
+
+it("Burn Success: Owner is allowed to burn tokens", async function() {
+    const {fusionToken, owner} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+     const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+    await expect(fusionToken.connect(owner).burn(owner.address,500)).
+    to.emit(fusionToken,"Transfer");
+
+    const new_ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(new_ownerBal).to.be.equal(500);
+
+})
 it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", async function() {
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.mint(1000)).
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
 
     const ownerBal = await fusionToken.balanceOf(owner.address);
@@ -117,8 +154,8 @@ it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", asyn
    
 it("Mint and Approve: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
 
-    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.mint(1000)).
+    const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
     
     const ownerBal = await fusionToken.balanceOf(owner.address);
@@ -138,8 +175,8 @@ it("Mint and Approve: Owner mints tokens, sets allowance for addr1, addr1 transf
 
 it("Transfer: Owner mints tokens, and transfers from tokens to addr1 ", async function() {
 
-    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.mint(1000)).
+    const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
     
     const ownerBal = await fusionToken.balanceOf(owner.address);
@@ -163,7 +200,7 @@ it("Transfer: Owner mints tokens, and transfers from tokens to addr1 ", async fu
 
 it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
     const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
-    await expect(fusionToken.mint(1000)).
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
     
     const ownerBal = await fusionToken.balanceOf(owner.address);
@@ -194,6 +231,8 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
     expect(new_ownerBal).to.be.equal(750);
 
 })
+
+
 
 });
 

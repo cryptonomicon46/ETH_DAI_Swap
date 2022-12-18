@@ -7,9 +7,11 @@ import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "./FusionToken.sol";
  
 contract SwapETH2DAI is FusionToken{
     ISwapRouter public immutable swapRouter;
+    using SafeMath for uint;
 
     address public immutable DAI;
     address public immutable WETH9;
@@ -23,6 +25,8 @@ contract SwapETH2DAI is FusionToken{
     event Received(address _sender, uint _value);
     event Deposit(address _payee, uint _value);
     event Withdraw(address _payee, uint _value);
+    event Refund(address _refunder, uint _value);
+    event NoRefund();
     constructor(address DAI_, 
             address WETH9_,
               ISwapRouter _swapRouter) FusionToken(){
@@ -44,15 +48,82 @@ contract SwapETH2DAI is FusionToken{
         require(_owner == msg.sender, "Caller is not the owner");
         _;
     }
-    function _deposit(address _payee) internal payable onlyOwner() {
-        require(msg.value>= "0.1 ether", "INVALID_DEPOSIT_AMOUNT");
 
-        _depositBal[_payee] = _depositBal[_payee].add(msg.value);
-        Deposit(_payee,msg.value);
+
+    /// @notice deposit, public function , can only be called by the owner, that handles depositing the funds from the depositer
+    /// @param _payee: the address of the account depositing the funds
+    /// @param _value: the amount to deposit from the depositer
+    /// @dev emits a Deposit event after updating the balances
+    function deposit(address _payee, uint _value) public payable onlyOwner() returns (bool) {
+        _deposit(_payee, _value);
+        return true;
     }
 
 
-        function _withdraw(address _payee) internal payable onlyOwner() {
+    /// @notice _deposit, internal function that handles depositing the funds from the depositer
+    /// @param _payee: the address of the account depositing the funds
+    /// @dev emits a Deposit event after updating the balances
+    function _deposit(address _payee, uint _value) internal virtual payable {
+        require(msg.value>= "0.1 ether", "INVALID_DEPOSIT_AMOUNT");
+
+        _depositBal[_payee] = _depositBal[_payee].add(value);
+        Deposit(_payee,msg.value);
+    }
+
+    ///@notice refund, top level function that calls an internal function to check if account receives a refund, returns true
+    ///@param account, the account that'll receive the excess refund
+       function refund(address account, uint value) public payable returns (bool) {
+        _refund(account,value);
+        return true;
+    }
+
+
+
+    ///@notice _refund, internal function that handles the sending the excess ETH refund
+    ///@param account, the account that'll receive the excess refund
+    ///@dev emits either a Refund or NoRefund event
+    function _refund(address account, uint amountToUse) internal payable {
+        if (msg.value > amountToUse) {
+            uint amountToRefund = (msg.value).sub(amountToUse);
+            sendETH(account,amountToRefund);'
+            emit Refund(account,value);
+        } else if (msg.value = amountToUse) {
+            emit NoRefund();
+        }
+
+    }
+
+
+    ///@notice sendETH public function to send ETH, called an internal function
+    ///@param account: payable account that'll get the refund in ETH
+    ///@param _value: amount of ETH to be refunded to the account
+    ///@return boolean: true if the operation is successful
+    function sendETH(address payable account, uint _value) public payable returns (bool){
+        _sendEth(account,_value);
+        return true;
+    }
+    ///@notice _sendETH internal function to handle sending ETH, emits Refund event
+    ///@param account: payable account that'll get the refund in ETH
+    ///@param _value: amount of ETH to be refunded to the account
+    ///@return boolean: true if the operation is successful
+    function _sendETH(address payable account, uint _value) internal payable {
+        (bool success, ) = payable(account).call{value: _value}("");
+        require(success, "Refund didn't go through successfully");
+    }
+
+    /// @notice withdraw, allows users to withdraw their funds in case the swap doesn't go through
+    /// @param _payee: the address of the account withdrawing funds
+    /// @dev Checks-Effects-Interactions pattern implemented to avoid reentrancy
+        function withdraw(address _payee) public payable returns (bool){
+            _withdraw(_payee);
+            return true;
+    } 
+
+
+    /// @notice _withdraw, internal function that does a low level call to transfer balances, emits Withdraw event
+    /// @param _payee: the address of the account withdrawing funds
+    /// @dev Checks-Effects-Interactions pattern implemented to avoid reentrancy
+        function _withdraw(address _payee) internal virtual payable {
         require(_payee != address(0),"INVALID_ACCOUNT");
         require(_depositBal[_payee]>= 0,"NOTHING_TO_WITHDRAW");
         uint _bal  = _depositBal[_payee];
@@ -63,15 +134,22 @@ contract SwapETH2DAI is FusionToken{
     } 
 
 
-    /// @notice SwapETHToDai takes in the use's ETH and wraps to WETH before the swap operation to DAI
+    /// @notice SwapETHToDai accepts user funds in msg.value
+    /// @param amountToUse, the amount of ETH to use to conver to DAI , refund the balance
     /// @dev returns the excess value ETH back to the sender (amountToUse - msg.value)    
-    /// Do not use the IWETH interface, define your own ERC20 contract 
-
     function SwapETHToDai(uint amountToUse) external payable returns (uint amountOut) {
         require(msg.value > 0.1 ether, "ETH_VALUE_TOO_LOW");
 
-        require(msg.value >= amountToUse, "AmountTOSwap_Error");
+        require(msg.value >= amountToUse, "Swap input value error");
         console.log("Input ETH Amount=", msg.value);
+
+        //Issue a refund if account sent more ETH than they intended to swap in amountToUse variable
+        refund(msg.sender, amountToUse);
+      //  console.log(refund(msg.sender, amountToUse));
+
+
+        //Deposit the funds 
+        deposit(msg.sender, amountToUse);
 
 
         //How to convert the incoming ETH to WETH?
@@ -101,11 +179,7 @@ contract SwapETH2DAI is FusionToken{
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
         
-        //Refund excess ETH to User
-        uint refundAmount = msg.value - amountToUse;
-       (bool sent, ) = msg.sender.call{value: refundAmount}("");
-        require(sent, "Refund_Failed");
-
+ 
         //Refund event
 
     }
@@ -119,7 +193,7 @@ contract SwapETH2DAI is FusionToken{
     {
         ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
-                tokenIn : WETH9,
+                tokenIn : ION,
                 tokenOut : DAI,
                 fee: poolFee,
                 recipient: msg.sender,

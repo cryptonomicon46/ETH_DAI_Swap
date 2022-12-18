@@ -59,4 +59,14 @@ interface IFusionToken {
     /// @param amount , amount set as allowance or approved to spend from the msg.sender
     function approve(address spender, uint amount) external returns (bool);
 
+    ///@notice mint, mints tokens to account
+    ///@param account, address receiving the funds
+    ///@param amount, amount of tokens to be minted
+    function mint(address account, uint amount) external returns (bool);
+
+    ///@notice burn, burns tokens from the account, returns bool
+    ///@param account, address receiving the funds
+    ///@param amount, amount of tokens to be burned
+    function burn(address account, uint amount) external returns (bool);
+
 }
