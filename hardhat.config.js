@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
+require("@nomiclabs/hardhat-etherscan");
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const GOERLI_URL_ALCHEMY = process.env.GOERLI_URL_ALCHEMY;
@@ -59,4 +60,12 @@ module.exports = {
 
 
   },
+
+  etherscan: {
+    apiKey: {
+      goerli: ETH_API_KEY
+    }
+
+
+},
 };

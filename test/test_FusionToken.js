@@ -8,7 +8,6 @@ const { parse } = require("dotenv");
 
 
 
-const TOTAL_SUPPLY = 100000;
 const DECIMAL = 18;
 const NAME = "Fusion";
 const SYMBOL = "ION";
@@ -64,12 +63,6 @@ describe("Fusion Token Tests", function () {
   });
 
 
-  it("Check TotalSupply: Check the total circulation supply of the Fusion token.", async function() {
-    const {fusionToken, owner} = await loadFixture(deployTokenFixture);
-    const totalSupply = await fusionToken.totalSupply();
-     expect(totalSupply).to.be.equal(TOTAL_SUPPLY);
-
-  })
 
   it("Check Decimal: Check the decimal places for the Fusion token.", async function() {
     const {fusionToken, owner} = await loadFixture(deployTokenFixture);
@@ -101,6 +94,18 @@ it("Mint Success: Owner is allowed to mint tokens, check owner balance", async f
     expect(ownerBal).to.be.equal(1000);
 
 })
+
+
+it("Check TotalSupply after Mint: Check the total circulation supply of the Fusion token.", async function() {
+    const {fusionToken, owner} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+
+    const totalSupply = await fusionToken.totalSupply();
+     expect(totalSupply).to.be.equal(1000);
+
+  })
 
 
 it("Burn Fail: Burn operation can only be initiated by the deployer", async function(){

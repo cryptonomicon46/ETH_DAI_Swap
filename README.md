@@ -66,3 +66,12 @@ SimpleSwap address: 0x707531c9999AaeF9232C8FEfBA31FBa4cB78d84a
 SwapETH2DAI address: 0x2538a10b7fFb1B78c890c870FC152b10be121f04
 
 
+Verify your contracts on etherscan
+npm install --save-dev @nomiclabs/hardhat-etherscan
+require("@nomiclabs/hardhat-etherscan");
+npx hardhat verify --network mainnet DEPLOYED_CONTRACT_ADDRESS "Constructor argument 1"
+
+Fusion Token on goerli:
+npx hardhat verify "0xa28Aae128E9193D659De6d25e4979499c41E9c19" --network goerli
+Verified contract:
+https://goerli.etherscan.io/address/0xa28Aae128E9193D659De6d25e4979499c41E9c19#code

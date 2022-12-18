@@ -13,7 +13,7 @@ contract FusionToken is IFusionToken {
     string private _symbol = "ION";
     uint private _decimal = 18;
     address private _owner;
-    uint private _totalSupply = 100000;
+    uint private _totalSupply;
     mapping (address => uint) private _balance;
     mapping (address => mapping (address => uint)) private _allowances;
 
@@ -77,7 +77,7 @@ contract FusionToken is IFusionToken {
     /// @param account, receiver of the tokens
     /// @param amount , amount of tokens minted
     function _mint(address account,uint amount) internal virtual  {
-        require (amount<= _totalSupply,"INVALID_MINT_AMOUNT");
+        // require (amount<= _totalSupply,"INVALID_MINT_AMOUNT");
          _balance[account] = _balance[account].add(amount);
         _totalSupply = _totalSupply.add(amount);
         emit Transfer(account,amount );
