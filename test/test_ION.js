@@ -16,7 +16,7 @@ const SYMBOL = "ION";
 // have read-only access to the Contract
 
 
-describe("Fusion Token Tests", function () {
+describe("ION Token Tests", function () {
 
 
     async function deployTokenFixture() {
@@ -132,6 +132,9 @@ it("Burn Success: Owner is allowed to burn tokens", async function() {
     expect(new_ownerBal).to.be.equal(500);
 
 })
+
+
+
 it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", async function() {
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.connect(owner).mint(owner.address,1000)).
@@ -157,7 +160,23 @@ it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", asyn
 
 })
    
-it("Mint and Approve: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
+it("Allowance fail: Owner mints tokens, transfers some tokens to addr1", async function() {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+    const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+    await expect(fusionToken.connect(addr1.address).transferFrom(owner.address, addr2.address,100)).
+    to.be.revertedWith("INSUFFICIENT_ALLOWANCE");
+
+ 
+
+
+})
+it("Allowance Pass: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
 
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.connect(owner).mint(owner.address,1000)).
@@ -171,14 +190,14 @@ it("Mint and Approve: Owner mints tokens, sets allowance for addr1, addr1 transf
     await expect(fusionToken.approve(addr1.address,500)).
     to.emit(fusionToken,"Approval");
     
-    const allowance_addr1 = await fusionToken.allowance(addr1.address);
+    const allowance_addr1 = await fusionToken.allowance(owner.address,addr1.address);
     expect(allowance_addr1).to.equal(500);
 
     
 })
 
 
-it("Transfer: Owner mints tokens, and transfers from tokens to addr1 ", async function() {
+it("Allowance Transfer: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
 
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.connect(owner).mint(owner.address,1000)).
@@ -188,20 +207,17 @@ it("Transfer: Owner mints tokens, and transfers from tokens to addr1 ", async fu
     // console.log(ownerBal);
     expect(ownerBal).to.be.equal(1000);
 
-    await expect(fusionToken.transfer(addr1.address,250)).
-    to.emit(fusionToken,"Transfer");
 
-    const addr1_bal = await fusionToken.balanceOf(addr1.address);
-    // console.log(ownerBal);
-    expect(addr1_bal).to.be.equal(250);
-
-    const ownerNewBal = await fusionToken.balanceOf(owner.address);
-    // console.log(ownerBal);
-    expect(ownerNewBal).to.be.equal(750);
-
+    await expect(fusionToken.approve(addr1.address,500)).
+    to.emit(fusionToken,"Approval");
+    
+    const allowance_addr1 = await fusionToken.allowance(owner.address,addr1.address);
+    expect(allowance_addr1).to.equal(500);
 
     
 })
+
+
 
 it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
     const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
@@ -216,13 +232,13 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
     await expect(fusionToken.approve(addr1.address,500)).
     to.emit(fusionToken,"Approval");
     
-    const allowance_addr1 = await fusionToken.allowance(addr1.address);
+    const allowance_addr1 = await fusionToken.allowance(owner.address, addr1.address);
     expect(allowance_addr1).to.equal(500);
 
     await expect(fusionToken.connect(addr1).transferFrom(owner.address, addr2.address, 250)).
     to.emit(fusionToken,"Transfer");
 
-    const new_allowance_addr1 = await fusionToken.allowance(addr1.address);
+    const new_allowance_addr1 = await fusionToken.allowance(owner.address,addr1.address);
     expect(new_allowance_addr1).to.equal(250);
 
         
@@ -237,6 +253,12 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
 
 })
 
+
+it("Deposit ETH: Sender deposits ETH into the account, check balances", async function() {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    
+
+})
 
 
 });

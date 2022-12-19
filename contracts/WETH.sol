@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
-import "./IERC20.sol";
+import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
 
-contract FusionToken is IERC20 {
+contract WETH is IWETH {
 
     using SafeMath for uint;
-    string private _name= "Fusion";
-    string private _symbol = "ION";
+    string private _name= "Wrapped Ether";
+    string private _symbol = "WETH";
     uint private _decimal = 18;
     address private _owner;
     uint private _totalSupply;
@@ -71,87 +71,52 @@ contract FusionToken is IERC20 {
         return _allowance[account][spender];
     }
    
-    /// @notice mint, external mint function, mints tokens to the owner's account
-    ///@param account, the account that received the minted tokens
-    /// @param amount , minted amount
-    /// @return bool, true if the operation succeeds
-    function mint(address account,uint amount) external override onlyOwner returns (bool) {
-        _mint(account,amount);
-        return true;
-    }
-    /// @notice _mint, internal function that handles the mint operation, checks, events to the owner
-    /// @param account, receiver of the tokens
-    /// @param amount , amount of tokens minted
-    function _mint(address account,uint amount) internal virtual  {
-        // require (amount<= _totalSupply,"INVALID_MINT_AMOUNT");
-         _balance[account] = _balance[account].add(amount);
-        _totalSupply = _totalSupply.add(amount);
-        emit Transfer(address(0),account,amount );
-    }
+  
 
-    /// @notice burn, external burn function, will burn tokens from the owner's account
-    ///@param account, the account from which tokens will be burned
-    /// @param amount , the amount of tokens to be burned
-    /// @return boolean, returns true if the operation succeeds
-    function burn(address account, uint amount) external override onlyOwner returns (bool) {
-        _burn(account, amount);
-        return true;
-    }
-
-    /// @notice _burn, internal burn function, handles the events and checks before burning tokesn from owner's account
-   ///@param account, the account from which tokens will be burned
-   /// @param amount , the amount of tokens to be burned
-    function _burn(address account, uint amount) internal virtual {
-        require(_balance[account]>= amount, "INSUFFICIENT_BALANCE_TO_BURN");
-        _balance[account] = _balance[account].sub(amount);
-        _totalSupply = _totalSupply.sub(amount);
-        emit Transfer(msg.sender,address(0),amount );
-
-    }
-
-    /// @notice transferFrom, sends the allowance amount alloted to msg.sender to a receiver
-    /// @param src  source of the tokens
-    /// @param dst  destination of the tokens
-    /// @param amount the allowance amount
-    /// @dev Checkes the msg.sender allowances before calling an internal transfer function for checks and effects
+    /// @notice transferFrom, sends the allowance amount alloted to msg.sender on behalf of owner to the recipeient, emits Transfer event. 
+    /// @param src  sender of the wad
+    /// @param dst  receiver of the wad 
+    /// @param wad the allowance amount
+    /// @dev calls the internal _transfer function , adjusts the allowance, emits Transfer and Approval events.
     function transferFrom(
         address src,
         address dst,
-        uint amount
+        uint wad
     ) external override returns (bool) {
-        require(_allowance[src][msg.sender]> amount,"INSUFFICIENT_ALLOWANCE");
-        _transfer(src,dst,amount);
-        _approve(src, msg.sender, _allowance[src][msg.sender].sub(amount));
+        require(_allowance[src][msg.sender] > wad,"INSUFFICIENT_ALLOWANCE!");
+        _transfer(src,dst,wad);
+        _approve(src, msg.sender, _allowance[src][msg.sender].sub(wad));
         return true;
     }
 
-    /// @notice transfer, sends amount to recipient, emits Transfer event. 
-    /// @param recipient  spender seeking an allowance on behalf on msg.sender
-    /// @param amount the allowance amount
+    /// @notice transfer, sends amount wad to dst, emits Transfer event. 
+    /// @param dst  destination of the funds
+    /// @param wad the allowance amount
     /// @dev checks balances of sender >= amount, checks of recipent != zero address
     function transfer(
-        address recipient,
-        uint amount
+        address dst,
+        uint wad
     ) external  override returns (bool) {
-        _transfer(msg.sender,recipient,amount);
+        _transfer(msg.sender,dst,wad);
         return true;
     }
 
 
     /// @notice _transfer, internal function that handles sending amount to recipient, emits Transfer event. 
-    /// @param recipient  spender seeking an allowance on behalf on msg.sender
-    /// @param amount the allowance amount
+    /// @param src  sender of the funds
+    /// @param dst  destination addres of the funds
+    /// @param wad the allowance amount
     /// @dev checks balances of sender >= amount, checks of recipent != zero address, adjusts the balances and emits the Transfer event
     function _transfer(
-        address sender,
-        address recipient,
-        uint amount
+        address src,
+        address dst,
+        uint wad
     ) internal {
-        require(_balance[sender] >= amount,"INSUFFICIENT_FOR_TRANSFER");
-        require(recipient != address(0),"INVALID_RECIPIENT");
-        _balance[sender]= _balance[sender].sub(amount);
-        _balance[recipient]= _balance[recipient].add(amount);
-        emit Transfer(sender,recipient,amount);
+        require(_balance[src] >= wad,"INSUFFICIENT_FOR_TRANSFER");
+        require(dst != address(0),"INVALID_RECIPIENT");
+        _balance[src]= _balance[src].sub(wad);
+        _balance[dst]= _balance[dst].add(wad);
+        emit Transfer(src,dst,wad);
          }
 
 
@@ -181,6 +146,33 @@ contract FusionToken is IERC20 {
         require(spender != address(0),"INVALID_SPENDER_ADDRESS");
         _allowance[account][spender] = amount;
         emit Approval(account,spender,amount);
+    }
+
+    /// @notice deposit, payable function that receives the senders native ETH to wrap into WETH
+    ///@dev emits a deposit event afte updating the user's balance
+    function deposit() public payable override {
+        _balance[msg.sender] += msg.value;
+        Deposit(msg.sender, msg.value);
+    }
+
+    /// @notice withdraw, allowas user to withdraw funds
+    ///@dev emits a withdraw event, performs checks and effects to avoid reentrancy attacks
+    function withdraw(uint wad) public override {
+        require(_balance[msg.sender] >= wad,"NOTHING_TO_WITHDRAW");
+        uint bal =  _balance[msg.sender];
+        _balance[msg.sender] -= wad;
+        _sendETH(payable(msg.sender),bal);
+        // msg.sender.transfer(wad);
+        Withdraw(msg.sender, wad);
+    }
+
+
+        ///@notice _sendETH internal function to handle sending ETH, emits Refund event
+    ///@param account: payable account that'll get the refund in ETH
+    ///@param amount: amount of ETH to be refunded to the account
+    function _sendETH(address payable account, uint amount) internal  {
+        (bool success, ) = payable(account).call{value: amount}("");
+        require(success, "FAILED_TO_SEND_FUNDS");
     }
 
 
