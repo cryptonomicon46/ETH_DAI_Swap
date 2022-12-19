@@ -14,6 +14,8 @@ interface IWETH {
     /// emitted from allowance, approve functions
     event Approval(address indexed owner, address indexed spender, uint amount);
 
+    // receive() external payable;
+
 
 
     ///@dev Despoit event raised when an account deposits ETH into the contract
@@ -73,11 +75,12 @@ interface IWETH {
 
    /// @notice deposit, to deposit native ETH into the contract
    ///@dev emits a deposit event
-        function deposit() external payable;
+   ///@return bool true or false
+        function deposit() external payable returns (bool);
 
    /// @notice withdraw, to withdraw the original ETH from the wrapped contract
    ///@dev emits a withdraw event
-        function withdraw(uint256 wad) external;
+    function withdraw(uint256 wad) external;
 
 
 }

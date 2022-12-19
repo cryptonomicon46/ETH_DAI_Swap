@@ -4,16 +4,16 @@ pragma abicoder v2;
 // import "./UniSwap.sol";
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./IERC20.sol";
+import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
  
 contract SwapForDai {
     ISwapRouter public immutable swapRouter;
     using SafeMath for uint;
-    address public immutable DAI;
-    address public immutable WETH9;
+    address  public immutable DAI;
+    address  public immutable WETH;
     address private _owner;
     uint24 constant poolFee = 3000; //0.01% DAI/GETH pool
     mapping (address => uint) private _depositBal;
@@ -22,13 +22,15 @@ contract SwapForDai {
     event SwapCompleted(uint _amount);
     event Received(address _sender, uint _value);
     event Deposit(address account, uint value);
+    event Withdraw(address account, uint value);
+
     event Refund(address _refunder, uint _value);
     event NoRefund();
     constructor(
-            address WETH9_,
-            address DAI_,
-            ISwapRouter _swapRouter) {
-        WETH9 = WETH9_;
+            address  WETH_,
+            address  DAI_,
+            ISwapRouter _swapRouter)  payable {
+        WETH = (WETH_);
         DAI = DAI_;
         swapRouter = _swapRouter;
         _owner = msg.sender;
@@ -36,18 +38,60 @@ contract SwapForDai {
 
   
 
-  function WrapEther() external payable {
-    
+  function WrapAllETH() external payable {
+
+    console.log("ETH being wrapped...", msg.value);
+    uint balanceBefore = IWETH(WETH).balanceOf(msg.sender);
+    console.log("Initial Balance:",balanceBefore);
+    IWETH(WETH).deposit{value: msg.value};
+    IWETH(WETH).approve(address(this),msg.value);
+    uint amountInWETH = IWETH(WETH).balanceOf(msg.sender);
+
+    IWETH(WETH).transferFrom(WETH,address(this),amountInWETH);
+    IWETH(WETH).approve(address(swapRouter), msg.value );
+    uint getRouterAllowance = IWETH(WETH).allowance(address(this),address(swapRouter));
+        console.log("Swap Router's allowance updated to:",getRouterAllowance);
+    emit Deposit(msg.sender, msg.value);
   }
 
+
+    function WrapSomeETH(uint amountToUse) external payable {
+    
+    console.log("Amount Sent:", msg.value);
+    console.log("Amount To use:", amountToUse);
+    _refund(msg.sender, amountToUse, msg.value);
+
+    console.log("ETH being wrapped...", amountToUse);
+
+    IWETH(WETH).deposit{value: amountToUse};
+    IWETH(WETH).approve(address(this),amountToUse);
+
+    IWETH(WETH).transferFrom(WETH,address(this),IWETH(WETH).balanceOf(msg.sender));
+    IWETH(WETH).approve(address(swapRouter), amountToUse );
+    uint getRouterAllowance = IWETH(WETH).allowance(address(this),address(swapRouter));
+        console.log("Swap Router's allowance updated to:",getRouterAllowance);
+    emit Deposit(msg.sender, msg.value);
+  }
+
+    /// @notice UnWrap deposited ETH, update
+    ///@param amount withdraw amount requested by the caller 
+    ///@dev checks if balance is greater than amount and emits Withdraw event
+    function UnWrapWETH(uint amount) external payable {
+        // IWETH(WETH).approve(address(this), amount);
+        // IWETH(WETH).transferFrom(msg.sender, address(this),amount);
+        // IWETH(WETH).withdraw(amount);
+        // console.log("Contract balance:", address(this).balance);
+        // _sendETH(msg.sender, address(this).balance);
+        // emit Withdraw(msg.sender, amount);
+    }
 
 
     /// @notice swap accepts user funds in msg.value
     /// @dev returns the excess value ETH back to the sender (amountToUse - msg.value)    
     function Swap(uint amountToSwap) external payable returns (uint amountOut) {
 
-        IERC20(WETH9).transferFrom(msg.sender,address(this), amountToSwap);
-        IERC20(WETH9).approve(address(swapRouter),amountToSwap);
+        IERC20(WETH).transferFrom(msg.sender,address(this), amountToSwap);
+        IERC20(WETH).approve(address(swapRouter),amountToSwap);
 
         // uint payeeBalance = WETH9(GETH).balanceOf(_payee);
 
@@ -86,7 +130,7 @@ contract SwapForDai {
     {
         ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
-                tokenIn : GETH,
+                tokenIn : WETH,
                 tokenOut : DAI,
                 fee: poolFee,
                 recipient: msg.sender,
@@ -126,6 +170,7 @@ contract SwapForDai {
     function _refund(address payable account, uint amountToUse, uint amountSent) internal  {
         if (amountSent > amountToUse) {
             uint amountToRefund = (amountSent).sub(amountToUse);
+            console.log("_refund Function: Refund Amount:",amountToRefund);
             _sendETH(account,amountToRefund);
             emit Refund(account,amountToRefund);
         } 
@@ -147,9 +192,9 @@ contract SwapForDai {
     ///@param account: payable account that'll get the refund in ETH
     ///@param _value: amount of ETH to be refunded to the account
     function _sendETH(address payable account, uint _value) internal  {
+        console.log("_sentEth function: Sending refund to \nAddr: %s \nETH Refund: %s", account, _value);
         (bool success, ) = payable(account).call{value: _value}("");
         require(success, "Refund didn't go through successfully");
     }
 
-    //
     }

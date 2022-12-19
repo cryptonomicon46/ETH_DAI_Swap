@@ -13,7 +13,7 @@ const SwapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564";
 
 const DAI_DECIMALS = 18; 
 console.log("DAI_ADDRESS:", DAI_ADDRESS);
-console.log("WETH_ADDRESS:", GETH_ADDRESS);
+console.log("WETH_ADDRESS:", WETH_ADDRESS);
 console.log("SWAP_ROUTER_ADDRESS:", SwapRouterAddress);
 
 const ercAbi = [
@@ -21,6 +21,7 @@ const ercAbi = [
   "function balanceOf(address owner) external view returns (uint256)",
   // Authenticated Functions
   "function transfer(address to, uint amount) returns (bool)",
+  "function allowance(address owner, uint spender) returns (uint)",
   "function deposit() public payable",
   "function approve(address spender, uint256 amount) returns (bool)",
   "event Transfer(address indexed _from, address indexed _to, uint256 _value)",
@@ -40,19 +41,19 @@ describe("SwapForDai", function () {
 
     [owner,addr1,addr2] = await ethers.getSigners();
     const  SwapForDai = await ethers.getContractFactory("SwapForDai");
-    const swapForDai = await SwapForDai.deploy(GETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
+    const swapForDai = await SwapForDai.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
     await swapForDai.deployed();
-    const GETH = new ethers.Contract(GETH_ADDRESS, ercAbi, owner);
+    const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, owner);
     const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
     console.log("DAI Contract Address:",DAI.address);
-    console.log("GETH Contract Address:",GETH.address);
-    return {swapForDai, owner, GETH,DAI};
+    console.log("GETH Contract Address:",WETH.address);
+    return {swapForDai, owner, WETH,DAI};
     }   
 
 
   it("Contract Deployed: Deploy contract and check for proper address!", async function () {
     
-    const {swapForDai, owner,GETH,DAI} = await loadFixture(deploySwapFixture);
+    const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
     expect(swapForDai.address).to.be.a.properAddress;
 
   });
@@ -60,12 +61,60 @@ describe("SwapForDai", function () {
 
 
 
+    it("Wrap All ETH: Wraps ETH to WETH and emits a deposit event, update balance on behalf of the sender in the WETH contract", async function() {
+        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        const bal0 = await owner.getBalance();
+        console.log(formatEther(bal0,18));
+        await expect(swapForDai.WrapAllETH({value: parseEther("20.0")})).
+        to.emit(swapForDai,"Deposit");
 
+        const bal1 = await owner.getBalance();
+        console.log(formatEther(bal1,18));
+        const balDelta = formatEther((bal0- bal1).toString(),18);
+        console.log(balDelta);
+        await expect(Number(balDelta)).to.be.lessThanOrEqual(20.1);
+
+    })
+
+    it("Wrap Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits a deposit event, update balance on behalf of the sender in the WETH contract", async function() {
+        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+
+        // await (swapForDai.WrapETH({value: parseEther("1.0")}));
+        const bal0 = await owner.getBalance();
+        console.log(formatEther(bal0,18));
+        await expect(swapForDai.WrapSomeETH(parseEther("10.0"),{value: parseEther("20.0")})).
+        to.emit(swapForDai,"Deposit");
+
+        const bal1 = await owner.getBalance();
+        console.log(formatEther(bal1,18));
+        const balDelta = formatEther((bal0- bal1).toString(),18);
+        console.log(balDelta);
+        await expect(Number(balDelta)).to.be.lessThanOrEqual(10.1);
+        
+    })
+
+    it("This will: UnWraps WETH to ETH and transfers to sender", async function() {
+        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+
+        // const InitialWethBal= await WETH.balanceOf(owner.address);
+        // console.log(InitialWethBal);
+        // await expect(swapForDai.WrapETH({value: parseEther("1.0")})).
+        // to.emit(swapForDai,"Deposit");
+
+        // const FinalWethBal= await WETH.balanceOf(owner.address);
+        // console.log("Final Weth Balance:",FinalWethBal);
+        
+        // await WETH.approve(swapForDai.address, parseEther("1.0"));
+        // await swapForDai.UnWrapWETH(parseEther("1.0"));  
+
+        // await expect(swapForDai.UnWrapWETH(parseEther("1.0"))).
+        // to.emit(swapForDai,"Withdraw");    
+    });
 
     it("Swap Succeeds: Owner tries to swap, confirm that SwapCompleted is emitted!", async function () {
-        const {swapForDai, owner,GETH,DAI} = await loadFixture(deploySwapFixture);
+        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
      
-    await swapForDai.Swap({value: parseEther("0.1")});
+    // await swapForDai.Swap({value: parseEther("0.1")});
 
     // await expect(swapForDai.swap(0.1)({ value: parseEther("0.2") })).
     // to.emit(swapForDai,"Refund");

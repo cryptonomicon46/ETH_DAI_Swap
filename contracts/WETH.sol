@@ -4,6 +4,7 @@ pragma solidity =0.7.6;
 
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "hardhat/console.sol";
 
 
 contract WETH is IWETH {
@@ -150,9 +151,18 @@ contract WETH is IWETH {
 
     /// @notice deposit, payable function that receives the senders native ETH to wrap into WETH
     ///@dev emits a deposit event afte updating the user's balance
-    function deposit() public payable override {
-        _balance[msg.sender] += msg.value;
-        Deposit(msg.sender, msg.value);
+    ///@return bool
+    function deposit() public payable override returns (bool){
+        console.log("Depositing Funds...");
+        _deposit();
+        return true;
+
+    }
+    
+    /// @notice _deposit, internal function that handles the deposit logic 
+        function _deposit() internal{
+        _balance[msg.sender] = _balance[msg.sender].add(msg.value);
+        emit Deposit(msg.sender, msg.value);
     }
 
     /// @notice withdraw, allowas user to withdraw funds
@@ -160,14 +170,14 @@ contract WETH is IWETH {
     function withdraw(uint wad) public override {
         require(_balance[msg.sender] >= wad,"NOTHING_TO_WITHDRAW");
         uint bal =  _balance[msg.sender];
-        _balance[msg.sender] -= wad;
+        _balance[msg.sender] =  _balance[msg.sender].sub(wad);
         _sendETH(payable(msg.sender),bal);
         // msg.sender.transfer(wad);
-        Withdraw(msg.sender, wad);
+        emit Withdraw(msg.sender, wad);
     }
 
 
-        ///@notice _sendETH internal function to handle sending ETH, emits Refund event
+    ///@notice _sendETH internal function to handle sending ETH, emits Refund event
     ///@param account: payable account that'll get the refund in ETH
     ///@param amount: amount of ETH to be refunded to the account
     function _sendETH(address payable account, uint amount) internal  {
@@ -175,5 +185,9 @@ contract WETH is IWETH {
         require(success, "FAILED_TO_SEND_FUNDS");
     }
 
+    // ///@notice receive external payable, calls the internal _deposit function
+    // receive() external override payable{
+    //     _deposit();
+    // }
 
 }
