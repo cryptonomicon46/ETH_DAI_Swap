@@ -117,10 +117,10 @@ describe("SwapContract", function () {
 
         // await (swapContract.WrapETH({value: parseEther("1.0")}));
         const bal0 = await DAI.balanceOf(owner.address);
-        console.log(formatEther(bal0,18));
+        console.log("User's DAI balance:",formatEther(bal0,18));
 
-        // await expect(swapContract.SwapDAI_WETH(100)).
-        // to.emit(swapContract,"SwapCompleted");
+        await expect(swapContract.SwapDAI_WETH(1000)).
+        to.emit(swapContract,"SwapCompleted");
 
         // const bal1 = await owner.getBalance();
         // console.log(formatEther(bal1,18));

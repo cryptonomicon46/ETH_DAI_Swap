@@ -91,7 +91,7 @@ contract SwapContract {
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
 
-        amountOut = _swap(WETH, DAI,3000, amountInWETH);
+        amountOut = _swap(WETH,DAI,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
@@ -103,21 +103,18 @@ contract SwapContract {
     function SwapDAI_WETH(uint256 amountDAI) external payable returns (uint amountOut) {
         console.log("Input DAI Amount=",amountDAI);
 
-        dai.approve(address(this), amountDAI);
-   
+        // dai.approve(address(this), amountDAI);
+        // IERC20(DAI).transfer(address(this),amountDAI);
 
-        weth.transfer(address(this),amountDAI);
-
-        // weth.transferFrom(msg.sender,address(this),amountInWETH);
-        uint contractDaiBalance = weth.balanceOf(address(this));
-        console.log("Balance of address(this) after",contractDaiBalance);
+        // uint contractBal = dai.balanceOf(address(this));
+        // console.log("Balance of address(this) after",contractBal);
       
-        dai.approve(address(swapRouter), contractDaiBalance );
-        uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
-        console.log("Swap Router's DAI allowance updated to:",getRouterAllowance);
+        // dai.approve(address(swapRouter), contractBal);
+        // uint getRouterAllowance = dai.allowance(address(this),address(swapRouter));
+        // console.log("Swap Router's DAI allowance updated to:",getRouterAllowance);
 
-        amountOut = _swap(DAI, WETH,3000, contractDaiBalance);
-        console.log("amountOut:", amountOut);
+        // amountOut = _swap(DAI, WETH,3000, contractBal);
+        // console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
 
