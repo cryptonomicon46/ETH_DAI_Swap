@@ -75,8 +75,7 @@ interface IWETH {
 
    /// @notice deposit, to deposit native ETH into the contract
    ///@dev emits a deposit event
-   ///@return bool true or false
-        function deposit() external payable returns (bool);
+    function deposit() external payable;
 
    /// @notice withdraw, to withdraw the original ETH from the wrapped contract
    ///@dev emits a withdraw event

@@ -75,3 +75,7 @@ Fusion Token on goerli:
 npx hardhat verify "0xa28Aae128E9193D659De6d25e4979499c41E9c19" --network goerli
 Verified contract:
 https://goerli.etherscan.io/address/0xa28Aae128E9193D659De6d25e4979499c41E9c19#code
+
+
+ npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap All ETH"
+ npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap Some ETH"

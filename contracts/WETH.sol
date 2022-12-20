@@ -151,19 +151,13 @@ contract WETH is IWETH {
 
     /// @notice deposit, payable function that receives the senders native ETH to wrap into WETH
     ///@dev emits a deposit event afte updating the user's balance
-    ///@return bool
-    function deposit() public payable override returns (bool){
+    function deposit() public payable override{
         console.log("Depositing Funds...");
-        _deposit();
-        return true;
-
-    }
-    
-    /// @notice _deposit, internal function that handles the deposit logic 
-        function _deposit() internal{
-        _balance[msg.sender] = _balance[msg.sender].add(msg.value);
+           _balance[msg.sender] = _balance[msg.sender].add(msg.value);
         emit Deposit(msg.sender, msg.value);
     }
+    
+
 
     /// @notice withdraw, allowas user to withdraw funds
     ///@dev emits a withdraw event, performs checks and effects to avoid reentrancy attacks
