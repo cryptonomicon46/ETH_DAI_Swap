@@ -24,9 +24,9 @@ async function main() {
     // console.log("\n");
 
 
-    const SwapForDai = await ethers.getContractFactory("SwapForDai");
-    const swapFordai = await SwapForDai.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
-    console.log("SwapForDai contract depoloyed at ", swapFordai.address);
+    const SwapContract = await ethers.getContractFactory("SwapContract");
+    const swapContract = await SwapContract.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
+    console.log("SwapForDai contract depoloyed at ", swapContract.address);
 
     // const WETH = await ethers.getContractFactory("WETH");
     // const weth = await WETH.deploy();
