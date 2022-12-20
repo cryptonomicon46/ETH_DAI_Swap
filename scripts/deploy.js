@@ -24,21 +24,16 @@ async function main() {
     // console.log("\n");
 
 
-    // const SwapETH2DAI = await ethers.getContractFactory("SwapETH2DAI");
-    // const swapeth2dai = await SwapETH2DAI.deploy(GETH_ADDRESS,DAI_ADDRESS);
-
     const SwapForDai = await ethers.getContractFactory("SwapForDai");
     const swapFordai = await SwapForDai.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
     console.log("SwapForDai contract depoloyed at ", swapFordai.address);
 
+    // const WETH = await ethers.getContractFactory("WETH");
+    // const weth = await WETH.deploy();
+    // console.log("WETH contract depoloyed at ", weth.address);
 
-    // const SwapETH2DAI = await ethers.getContractFactory("SwapETH2DAI");
-    // const swapeth2dai = await SwapETH2DAI.deploy(fusionToken.address,
-                                                    // DAI_ADDRESS,
-                                                    // SwapRouterAddress,
-                                                    // NonfungiblePositionManager);
-    // console.log("SwapETH2DAI address:", swapeth2dai.address);
-    // console.log("\n");
+
+    console.log("\n");
 
   }
   

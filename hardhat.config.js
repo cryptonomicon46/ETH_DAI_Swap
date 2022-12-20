@@ -55,7 +55,11 @@ module.exports = {
     goerli: {
       url: `${GOERLI_URL_ALCHEMY}${GOERLI_ALCHEMY_KEY}`,
       accounts: [`0x${PRIVATE_KEY}`]
-    }
+    },   
+     mainnet: {
+        url: `${MAINNET_URL_ALCHEMY}${MAINNET_ALCHEMY_KEY}`,
+        accounts: [`0x${PRIVATE_KEY}`]
+      }
 
 
 
@@ -63,7 +67,8 @@ module.exports = {
 
   etherscan: {
     apiKey: {
-      goerli: ETH_API_KEY
+      goerli: ETH_API_KEY,
+      mainnet: ETH_API_KEY
     }
 
 

@@ -50,7 +50,7 @@ npx hardhat test ./test/test_FusionToken.js --network localhost
 
 To deploy your scripts on Goerli or local forked node
 
-npx hardhat run scripts/deploly.js --network goerli
+npx hardhat run scripts/deploy.js --network goerli
 OUTPUT>
 Deploying contracts with the account: 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021
 Deployer account 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021 balance is '2.498698766861562921' ETH
@@ -58,7 +58,7 @@ SimpleSwap address: 0x3CEa950Ae49291836f7a8a656b4Ddd4f003E08dC
 SwapETH2DAI address: 0x3d680E71a582324441Cde75f6335b9Bb01580cf2
 
 
-npx hardhat run scripts/deploly.js --network hardhat
+npx hardhat run scripts/deploy.js --network hardhat
 OUTPUT>
 Deploying contracts with the account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
 Deployer account 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 balance is '10000.0' ETH
@@ -83,8 +83,23 @@ Test and Deploy for SwaiForDai.sol on Goerli
  npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap Some ETH"
 
 
- npx hardhat run scripts/deploly.js --network goerli
-npx hardhat verify "0x38f1D1cA0947813498Ef00D87b6709Bc1Ee8Ec6E" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+ npx hardhat run scripts/deploy.js --network goerli
+npx hardhat verify "0x78D48E478A270a8d8fB85cE794b4Ae660d7C0e9A" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
 
 
-https://goerli.etherscan.io/address/0x38f1D1cA0947813498Ef00D87b6709Bc1Ee8Ec6E#code
+https://goerli.etherscan.io/address/0x78D48E478A270a8d8fB85cE794b4Ae660d7C0e9A#code
+
+DEPLOLY WETH contract onto Goerli
+
+npx hardhat test ./test/test_WETH.js --network localhost
+npx hardhat run scripts/deploy.js --network goerli
+npx hardhat verify "0x5040f2eBc736656a03c971Cfa7dfF005cf2084b7" --network goerli
+https://goerli.etherscan.io/address/0x5040f2eBc736656a03c971Cfa7dfF005cf2084b7#code
+
+DEPLOY WETH ON MAINNET
+
+Deploying contracts with the account: 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021
+Deployer account 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021 balance is '0.037732853772326136' ETH
+WETH contract depoloyed at  0xd5aCB47829e407aD67BA3A1423e7ce387995D703
+npx hardhat verify "0xd5aCB47829e407aD67BA3A1423e7ce387995D703" --network mainnet
+https://etherscan.io/address/0xd5aCB47829e407aD67BA3A1423e7ce387995D703#code

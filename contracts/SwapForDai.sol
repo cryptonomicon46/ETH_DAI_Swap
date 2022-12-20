@@ -22,9 +22,9 @@ contract SwapForDai {
     address private _owner;
     IWETH private weth;
     IERC20 private dai;
-    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
-    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address public constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    address public constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     mapping (address => uint) private _depositBal;
 
     // UniSwap private uni = new UniSwap();
@@ -133,6 +133,12 @@ contract SwapForDai {
         _;
     }
 
+    ///@notice contractBalance , returns the balance of the contract
+    ///@return uint: the balance amount returned in UINT
+    ///@dev uses the onlyOwner modifier, and hence can only be called by the contract deployer
+    function contractBalance() external view onlyOwner returns (uint) {
+        return address(this).balance;
+    }
 
 
     ///@notice _refund, internal function that handles the sending the excess ETH refund
