@@ -68,7 +68,7 @@ describe("SwapForDai", function () {
         // await (swapForDai.WrapETH({value: parseEther("1.0")}));
         const bal0 = await owner.getBalance();
         console.log(formatEther(bal0,18));
-        await expect(swapForDai.WrapSomeETHAndSwap(parseEther("0.25"),{value: parseEther("1.0")})).
+        await expect(swapForDai.SwapSomeETH_DAI(parseEther("0.25"),{value: parseEther("1.0")})).
         to.emit(swapForDai,"SwapCompleted");
 
         const bal1 = await owner.getBalance();
@@ -88,7 +88,7 @@ describe("SwapForDai", function () {
     
     // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
 
-    const tx =  await swapForDai.WrapAllETHAndSwap({ value: parseEther("1") });
+    const tx =  await swapForDai.SwapAllETH_DAI({ value: parseEther("1") });
     const rc = await tx.wait(); // 0ms, as tx is already confirmed
     const event = rc.events.find(event => event.event === 'SwapCompleted');
     const [value] = event.args;

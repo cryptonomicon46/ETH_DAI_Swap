@@ -1,13 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 pragma abicoder v2;
-// import "./UniSwap.sol";
+
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "./IERC20.sol";
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
+  /// @notice SwapForDai has two functions that allow the user to swap native ETH to DAI. 
+  /// This contract has two functions as explained below
+  /// SwapAllETH_DAI: swaps 100% of msg.value to DAI for the caller.
+  /// SwapSomeETH_DAI: uses some amount of the msg.value and refunds the remaining to the caller
 
  
 contract SwapForDai {
@@ -39,11 +43,11 @@ contract SwapForDai {
   
   
 
-  /// @notice WrapSomeETHAndSwap takes in the user's ETH but only uses some ETH to wrap and swap to DAI 
+  /// @notice SwapSomeETH_DAI takes in the user's ETH but only uses some ETH to wrap and swap to DAI 
     /// @dev The user gets a refund of the ETH amount not used to Wrap or swap. 
     ///  emits a SwapCompleted event
     ///
-    function WrapSomeETHAndSwap(uint amountToUse) external payable returns (uint amountOut) {
+    function SwapSomeETH_DAI(uint amountToUse) external payable returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
         console.log("ETH being wrapped...", amountToUse);
@@ -66,10 +70,12 @@ contract SwapForDai {
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
-/// @notice WrapAllETHAndSwap takes in the user's ETH and wraps to WETH before the swap operation to DAI
+
+
+/// @notice SwapAllETH_DAI takes in the user's ETH and wraps to WETH before the swap operation to DAI
     /// @dev uses all the mag.value provided to wrap to WETH and then swap to DAI
     /// emits a SwapCompleted event
-    function WrapAllETHAndSwap() external payable returns (uint amountOut) {
+    function SwapAllETH_DAI() external payable returns (uint amountOut) {
         console.log("Input ETH Amount=", msg.value);
         weth.deposit{value: msg.value }();
         weth.approve(address(this), msg.value);
