@@ -34,27 +34,27 @@ const ercAbi = [
 // have read-only access to the Contract
 
 
-describe("SwapForDai", function () {
+describe("SwapContract", function () {
 
 
     async function deploySwapFixture() {
 
     [owner,addr1,addr2] = await ethers.getSigners();
-    const  SwapForDai = await ethers.getContractFactory("SwapForDai");
-    const swapForDai = await SwapForDai.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
-    await swapForDai.deployed();
+    const  SwapContract = await ethers.getContractFactory("SwapContract");
+    const swapContract = await SwapContract.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
+    await swapContract.deployed();
     const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, owner);
     const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
     console.log("DAI Contract Address:",DAI.address);
     console.log("GETH Contract Address:",WETH.address);
-    return {swapForDai, owner, WETH,DAI};
+    return {swapContract, owner, WETH,DAI};
     }   
 
 
   it("Contract Deployed: Deploy contract and check for proper address!", async function () {
     
-    const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
-    expect(swapForDai.address).to.be.a.properAddress;
+    const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+    expect(swapContract.address).to.be.a.properAddress;
 
   });
 
@@ -63,13 +63,13 @@ describe("SwapForDai", function () {
 
 
     it("Wrap Some ETH And Swap: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
-        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
 
-        // await (swapForDai.WrapETH({value: parseEther("1.0")}));
+        // await (swapContract.WrapETH({value: parseEther("1.0")}));
         const bal0 = await owner.getBalance();
         console.log(formatEther(bal0,18));
-        await expect(swapForDai.SwapSomeETH_DAI(parseEther("0.25"),{value: parseEther("1.0")})).
-        to.emit(swapForDai,"SwapCompleted");
+        await expect(swapContract.SwapSomeETH_DAI(parseEther("0.25"),{value: parseEther("1.0")})).
+        to.emit(swapContract,"SwapCompleted");
 
         const bal1 = await owner.getBalance();
         console.log(formatEther(bal1,18));
@@ -80,7 +80,7 @@ describe("SwapForDai", function () {
     })
 
     it("Wrap All ETH: swap must complete and emit event, check DAI balance after the swap!", async function () {
-        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
     
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
         const DAIBalanceBefore = Number(ethers.utils.formatUnits
@@ -88,7 +88,7 @@ describe("SwapForDai", function () {
     
     // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
 
-    const tx =  await swapForDai.SwapAllETH_DAI({ value: parseEther("1") });
+    const tx =  await swapContract.SwapAllETH_DAI({ value: parseEther("1") });
     const rc = await tx.wait(); // 0ms, as tx is already confirmed
     const event = rc.events.find(event => event.event === 'SwapCompleted');
     const [value] = event.args;

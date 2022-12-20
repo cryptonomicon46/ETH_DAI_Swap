@@ -14,7 +14,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
   /// SwapSomeETH_DAI: uses some amount of the msg.value and refunds the remaining to the caller
 
  
-contract SwapForDai {
+contract SwapContract {
     ISwapRouter public immutable swapRouter;
     using SafeMath for uint;
     // address  public immutable DAI;
@@ -65,7 +65,7 @@ contract SwapForDai {
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
 
-        amountOut = _swap(amountInWETH);
+        amountOut = _swap(WETH, DAI,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
@@ -91,24 +91,54 @@ contract SwapForDai {
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
 
-        amountOut = _swap(amountInWETH);
+        amountOut = _swap(WETH, DAI,3000, amountInWETH);
+        console.log("amountOut:", amountOut);
+        emit SwapCompleted(amountOut);
+    }
+
+
+
+    /// @notice SwapDAI_WETH takes in the user's DAI swaps to WETH
+    /// @dev emits a SwapCompleted event
+    function SwapDAI_ETH(uint256 amountDAI) external payable returns (uint amountOut) {
+        console.log("Input DAI Amount=",amountDAI);
+
+        dai.approve(address(this), amountDAI);
+   
+
+        weth.transfer(address(this),amountDAI);
+
+        // weth.transferFrom(msg.sender,address(this),amountInWETH);
+        uint contractDaiBalance = weth.balanceOf(address(this));
+        console.log("Balance of address(this) after",contractDaiBalance);
+      
+        dai.approve(address(swapRouter), contractDaiBalance );
+        uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
+        console.log("Swap Router's DAI allowance updated to:",getRouterAllowance);
+
+        amountOut = _swap(DAI, WETH,3000, contractDaiBalance);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
 
     /// @notice _swap internal function that  swaps amountIn tokens to exact amountOut
     /// using the DAI/WETH9 0.3% pool by calling the 
+    /// @param tokenIn  Input token address to swap
+    /// @param tokenOut  Output token address to swap
+    /// @param poolFee  pool swap fees
     /// @param amountIn  fixed amount of token input DAI or WETH
-    /// @param _amountOut maximum possible output of WET or DAI received
-    ///
-
-    function _swap(uint amountIn) internal returns (uint _amountOut) 
-    {
+    /// @return _amountOut maximum possible output of WET or DAI received
+    function _swap(address tokenIn,
+                address tokenOut, 
+                uint24 poolFee,
+                uint256 amountIn) 
+                internal returns 
+            (uint _amountOut) {
         ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
-                tokenIn : WETH,
-                tokenOut : DAI,
-                fee: 3000,
+                tokenIn : tokenIn,
+                tokenOut : tokenOut,
+                fee: poolFee,
                 recipient: msg.sender,
                 deadline: block.timestamp,
                 amountIn: amountIn,
