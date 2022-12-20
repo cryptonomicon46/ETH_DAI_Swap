@@ -108,6 +108,27 @@ describe("SwapContract", function () {
 
  
     });
+
+
+
+
+    it("Swap DAI-WETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
+        const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+
+        // await (swapContract.WrapETH({value: parseEther("1.0")}));
+        const bal0 = await DAI.balanceOf(owner.address);
+        console.log(formatEther(bal0,18));
+
+        // await expect(swapContract.SwapDAI_WETH(100)).
+        // to.emit(swapContract,"SwapCompleted");
+
+        // const bal1 = await owner.getBalance();
+        // console.log(formatEther(bal1,18));
+        // const balDelta = formatEther((bal0- bal1).toString(),18);
+        // console.log("Amount Used for Swap:",balDelta);
+        // await expect(Number(balDelta)).to.be.lessThanOrEqual(0.251);
+        
+    })
    
   
 

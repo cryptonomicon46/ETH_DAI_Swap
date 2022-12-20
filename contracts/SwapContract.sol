@@ -100,7 +100,7 @@ contract SwapContract {
 
     /// @notice SwapDAI_WETH takes in the user's DAI swaps to WETH
     /// @dev emits a SwapCompleted event
-    function SwapDAI_ETH(uint256 amountDAI) external payable returns (uint amountOut) {
+    function SwapDAI_WETH(uint256 amountDAI) external payable returns (uint amountOut) {
         console.log("Input DAI Amount=",amountDAI);
 
         dai.approve(address(this), amountDAI);
