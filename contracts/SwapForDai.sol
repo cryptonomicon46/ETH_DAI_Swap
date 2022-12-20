@@ -56,10 +56,9 @@ contract SwapForDai {
 
         weth.deposit{value: amountToUse }();
         weth.approve(address(this), amountToUse);
-        uint amountInWETH = weth.balanceOf(msg.sender);
-
-        weth.transferFrom(WETH,address(this),amountInWETH);
-        amountInWETH = weth.balanceOf(address(this));
+  
+        weth.transfer(address(this),amountToUse);
+        uint amountInWETH = weth.balanceOf(address(this));
         console.log("Balance of address(this) after",amountInWETH);
       
         weth.approve(address(swapRouter), amountInWETH );
@@ -79,9 +78,12 @@ contract SwapForDai {
         console.log("Input ETH Amount=", msg.value);
         weth.deposit{value: msg.value }();
         weth.approve(address(this), msg.value);
-        uint amountInWETH = weth.balanceOf(msg.sender);
+        // uint amountInWETH = weth.balanceOf(msg.sender);
+        uint amountInWETH = msg.value;
 
-        weth.transferFrom(WETH,address(this),amountInWETH);
+        weth.transfer(address(this),amountInWETH);
+
+        // weth.transferFrom(msg.sender,address(this),amountInWETH);
         amountInWETH = weth.balanceOf(address(this));
         console.log("Balance of address(this) after",amountInWETH);
       

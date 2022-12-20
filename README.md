@@ -77,17 +77,17 @@ Verified contract:
 https://goerli.etherscan.io/address/0xa28Aae128E9193D659De6d25e4979499c41E9c19#code
 
 
-Test and Deploy for SwaiForDai.sol on Goerli
+
+DEPLOY SwaiForDai.sol on Goerli
 
  npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap All ETH"
  npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap Some ETH"
-
+npx hardhat test ./test/test_SwapForDai.js --network localhost
 
  npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x78D48E478A270a8d8fB85cE794b4Ae660d7C0e9A" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+npx hardhat verify "0x59e50D0A3f8eC22F58D2d5DA78dca86bF062DfEB" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
 
-
-https://goerli.etherscan.io/address/0x78D48E478A270a8d8fB85cE794b4Ae660d7C0e9A#code
+https://goerli.etherscan.io/address/0x59e50D0A3f8eC22F58D2d5DA78dca86bF062DfEB#code
 
 DEPLOLY WETH contract onto Goerli
 

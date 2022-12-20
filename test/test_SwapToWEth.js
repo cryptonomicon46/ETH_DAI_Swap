@@ -66,17 +66,23 @@ describe("DAI_for_WETH", function () {
         const {swapDAI_WETH, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
 
         // await (swapDAI_WETH.WrapETH({value: parseEther("1.0")}));
-        const bal0 = await owner.getBalance();
-        console.log(formatEther(bal0,18));
+
+        console.log("Addr1's initial Dai Balance", await DAI.balanceOf(addr1.address));
+        console.log("Addr1's initial WETH Balance", await WETH.balanceOf(addr1.address));
+
 
         await DAI.transfer(addr1.address, 100);
         const ownerDaiBal_initial = await DAI.balanceOf(addr1.address);
-        console.log("Initial Owner Dai balance",ownerDaiBal_initial);
+        console.log("Addr1 Dai balance after transfer",ownerDaiBal_initial);
 
 
-        await expect(swapDAI_WETH.SwapDAI_WETH(100)).
+        await expect(swapDAI_WETH.connect(addr1).SwapDAI_WETH(100)).
         to.emit(swapDAI_WETH,"SwapCompleted");
 
+        console.log("Addr1's final Dai Balance", await DAI.balanceOf(addr1.address));
+        console.log("Addr1's final WETH Balance", await WETH.balanceOf(addr1.address));
+
+        // expect(await WETH.balanceOf(addr1.address)).to.be.equal('100');
         // const bal1 = await owner.getBalance();
         // console.log(formatEther(bal1,18));
         // const balDelta = formatEther((bal0- bal1).toString(),18);

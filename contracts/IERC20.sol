@@ -57,7 +57,7 @@ interface IERC20 {
    /// @notice approve, will approve the spender for an allowance of amount, emits Approval event, returns boolean
     /// @param spender , spender of the approved funds
     /// @param amount , amount set as allowance or approved to spend from the msg.sender
-    function approve(address spender, uint amount) external returns (bool);
+    function approve(address spender, uint256 amount) external returns (bool);
 
     ///@notice mint, mints tokens to account
     ///@param account, address receiving the funds

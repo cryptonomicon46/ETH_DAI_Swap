@@ -4,7 +4,10 @@ pragma abicoder v2;
 
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
-import "./IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+// import "./IERC20.sol";
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
@@ -33,7 +36,7 @@ contract DAI_for_WETH {
             address  DAI_,
             ISwapRouter _swapRouter)  payable {
         weth = IWETH(WETH_);
-        dai = IERC20(DAI_);
+        dai = ERC20(DAI_);
         swapRouter = _swapRouter;
         _owner = msg.sender;
     }
@@ -45,21 +48,22 @@ contract DAI_for_WETH {
     /// emits a SwapCompleted event
     function SwapDAI_WETH(uint amountDai) external payable returns (uint amountOut) {
         console.log("Input DAI Amount=", amountDai);
-
         dai.approve(address(this),amountDai);
         console.log("Approved contract to deposit DAI..");
 
-        uint allowance = dai.allowance(address(this), msg.sender);
+        uint allowance = ERC20(DAI).allowance(msg.sender, address(this));
         console.log("Contract allowance:", allowance);
+        // uint amountDai = dai.balanceOf(address(this));
 
 
-        // dai.transferFrom(DAI,address(this),amountInDai);
+        // dai.transferFrom(DAI,address(this),amountDai);
         // console.log("Transferred DAI from owner to contract successfully..");
+        
+        // amountDai = dai.balanceOf(address(this));
 
-        // uint amountInDai = dai.balanceOf(address(this));
-        // console.log("Dai balance of address(this) after",amountInDai);
+        // console.log("Dai balance of address(this) after:",amountDai);
       
-        // weth.approve(address(swapRouter), amountInDai );
+        // dai.approve(address(swapRouter), amountInDai);
         // uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         // console.log("Swap Router's DAI allowance updated to:",getRouterAllowance);
 
