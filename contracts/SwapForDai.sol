@@ -66,7 +66,7 @@ contract SwapForDai {
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
 
-        amountOut = _swapWETHForDai(amountInWETH);
+        amountOut = _swap(amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
@@ -87,7 +87,7 @@ contract SwapForDai {
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
 
-        amountOut = _swapWETHForDai(amountInWETH);
+        amountOut = _swap(amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
@@ -98,7 +98,7 @@ contract SwapForDai {
     /// @param _amountOut maximum possible output of WET or DAI received
     ///
 
-    function _swapWETHForDai(uint amountIn) internal returns (uint _amountOut) 
+    function _swap(uint amountIn) internal returns (uint _amountOut) 
     {
         ISwapRouter.ExactInputSingleParams memory params = 
             ISwapRouter.ExactInputSingleParams({
@@ -117,30 +117,6 @@ contract SwapForDai {
     }
 
 
-
-   function swapExactInputSingleHop(
-        address tokenIn,
-        address tokenOut,
-        uint24 poolFee,
-        uint amountIn
-    ) public returns (uint amountOut) {
-        weth.transferFrom(msg.sender, address(this), amountIn);
-       weth.approve(address(swapRouter), amountIn);
-
-        ISwapRouter.ExactInputSingleParams memory params = ISwapRouter
-            .ExactInputSingleParams({
-                tokenIn: tokenIn,
-                tokenOut: tokenOut,
-                fee: poolFee,
-                recipient: msg.sender,
-                deadline: block.timestamp,
-                amountIn: amountIn,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            });
-
-        amountOut = swapRouter.exactInputSingle(params);
-    }
 
 
     /// @notice owner, returns the owner address or deployer address
