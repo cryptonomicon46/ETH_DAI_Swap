@@ -25,12 +25,7 @@ contract SwapForDai {
 
     // UniSwap private uni = new UniSwap();
     event SwapCompleted(uint _amount);
-    event Received(address _sender, uint _value);
-    event Deposit(address account, uint value);
-    event Withdraw(address account, uint value);
-
     event Refund(address _refunder, uint _value);
-    event NoRefund();
     constructor(
             address  WETH_,
             address  DAI_,
