@@ -77,5 +77,14 @@ Verified contract:
 https://goerli.etherscan.io/address/0xa28Aae128E9193D659De6d25e4979499c41E9c19#code
 
 
+Test and Deploy for SwaiForDai.sol on Goerli
+
  npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap All ETH"
  npx hardhat test ./test/test_SwapForDai.js --network localhost --grep "Wrap Some ETH"
+
+
+ npx hardhat run scripts/deploly.js --network goerli
+npx hardhat verify "0x38f1D1cA0947813498Ef00D87b6709Bc1Ee8Ec6E" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+
+
+https://goerli.etherscan.io/address/0x38f1D1cA0947813498Ef00D87b6709Bc1Ee8Ec6E#code

@@ -115,37 +115,8 @@ contract SwapForDai {
         _amountOut = ISwapRouter(swapRouter).exactInputSingle(params);
         console.log("amountOut=", _amountOut);     
     }
-//     function WrapSomeETHAndSwap(uint amountToUse) external payable returns (uint amountOut) {
-    
-//     console.log("Amount Sent:", msg.value);
-//     console.log("Amount To use:", amountToUse);
-//     console.log("ETH being wrapped...", amountToUse);
-
-//     _refund(msg.sender, amountToUse, msg.value);
 
 
-//     IWETH(WETH).deposit{value: amountToUse};
-//     IWETH(WETH).approve(address(this),amountToUse);
-
-//     uint amountInWETH = IWETH(WETH).balanceOf(msg.sender);
-
-
-//     IWETH(WETH).transferFrom(WETH,address(this),amountInWETH);
-//      amountInWETH = IWETH(WETH).balanceOf(address(this));
-
-
-//     IWETH(WETH).approve(address(swapRouter), amountInWETH);
-
-//     //   amountOut = swapExactInputSingleHop(amountToUse);
-//     // console.log("DAI amountOUT:",amountOut);
-//     emit SwapCompleted(amountToUse);
-
-//   }
-
-
-
-
- 
 
    function swapExactInputSingleHop(
         address tokenIn,
@@ -170,12 +141,6 @@ contract SwapForDai {
 
         amountOut = swapRouter.exactInputSingle(params);
     }
-
-    // receive() external payable {}
-
-    // /// @notice when no other function matches, not even receive
-    // fallback() external payable{}
-
 
 
     /// @notice owner, returns the owner address or deployer address
@@ -204,8 +169,6 @@ contract SwapForDai {
         } 
 
     }
-
-
 
 
     ///@notice _sendETH internal function to handle sending ETH, emits Refund event

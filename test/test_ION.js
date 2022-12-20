@@ -254,11 +254,7 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
 })
 
 
-it("Deposit ETH: Sender deposits ETH into the account, check balances", async function() {
-    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
-    
 
-})
 
 
 });
