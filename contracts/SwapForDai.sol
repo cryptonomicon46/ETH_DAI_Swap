@@ -44,8 +44,9 @@ contract SwapForDai {
   
   
 
-  /// @notice WrapSomeETHAndSwap takes in the use's ETH and wraps to WETH before the swap operation to DAI
-    /// @dev returns true
+  /// @notice WrapSomeETHAndSwap takes in the user's ETH but only uses some ETH to wrap and swap to DAI 
+    /// @dev The user gets a refund of the ETH amount not used to Wrap or swap. 
+    ///  emits a SwapCompleted event
     ///
     function WrapSomeETHAndSwap(uint amountToUse) external payable returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
@@ -70,9 +71,9 @@ contract SwapForDai {
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
-/// @notice WrapAllETHAndSwap takes in the use's ETH and wraps to WETH before the swap operation to DAI
-    /// @dev returns true
-    ///
+/// @notice WrapAllETHAndSwap takes in the user's ETH and wraps to WETH before the swap operation to DAI
+    /// @dev uses all the mag.value provided to wrap to WETH and then swap to DAI
+    /// emits a SwapCompleted event
     function WrapAllETHAndSwap() external payable returns (uint amountOut) {
         console.log("Input ETH Amount=", msg.value);
         weth.deposit{value: msg.value }();
@@ -92,7 +93,7 @@ contract SwapForDai {
         emit SwapCompleted(amountOut);
     }
 
-    /// @notice swapWETHforDai_EIS (EIS-ExactInputSingle) swaps amountIn tokens to exact amountOut
+    /// @notice _swap internal function that  swaps amountIn tokens to exact amountOut
     /// using the DAI/WETH9 0.3% pool by calling the 
     /// @param amountIn  fixed amount of token input DAI or WETH
     /// @param _amountOut maximum possible output of WET or DAI received
