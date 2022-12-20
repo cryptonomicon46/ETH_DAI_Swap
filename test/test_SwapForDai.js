@@ -62,7 +62,7 @@ describe("SwapForDai", function () {
 
 
 
-    it("Wrap Some ETH And Swap: Only uses amountTOUse to wrap Wraps ETH to WETH and emits a deposit event, update balance on behalf of the sender in the WETH contract", async function() {
+    it("Wrap Some ETH And Swap: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
         const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
 
         // await (swapForDai.WrapETH({value: parseEther("1.0")}));
@@ -79,7 +79,7 @@ describe("SwapForDai", function () {
         
     })
 
-    it("Wrap All ETH: swap must complete successfully, check DAI balance after the swap!", async function () {
+    it("Wrap All ETH: swap must complete and emit event, check DAI balance after the swap!", async function () {
         const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
     
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
@@ -108,53 +108,7 @@ describe("SwapForDai", function () {
 
  
     });
-    it("Swap Succeeds: Owner tries to swap, confirm that SwapCompleted is emitted!", async function () {
-        const {swapForDai, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
-     
-    // await swapForDai.Swap({value: parseEther("0.1")});
-
-    // await expect(swapForDai.swap(0.1)({ value: parseEther("0.2") })).
-    // to.emit(swapForDai,"Refund");
-
-    // const owner_GETH_bal_after = await GETH.balanceOf(owner.address);
-    // console.log("Owner GETH balance after refund:", owner_GETH_bal_after);
-
-    // const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
-    // console.log("Owner DAI balance after swap:", owner_DAI_bal_after);
-
- 
-    });
-
-    it("DAI amountOut: Owner tries to swap > 0.1 ETH, swap must complete successfully, check value in the emitted event, check DAI balance of the owner!", async function () {
-    //     const {swapGETH2DAI, owner,GETH,DAI} = await loadFixture(deploySwapFixture);
-    
-    //     const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
-    //     const DAIBalanceBefore = Number(ethers.utils.formatUnits
-    //         (owner_DAI_bal_before, 18))
-    
-    // // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
-
-    // const tx =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") });
-    // const rc = await tx.wait(); // 0ms, as tx is already confirmed
-    // const event = rc.events.find(event => event.event === 'SwapCompleted');
-    // const [value] = event.args;
-    // console.log("SwapCompleted event value:",value);
-
-    // const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
-    // const DAIBalanceAfter = Number(ethers.utils.formatUnits
-    //     (owner_DAI_bal_after, 18))
-
-
-    // console.log((owner_DAI_bal_after));
-    // console.log(DAIBalanceAfter);
-
-    //     expect(DAIBalanceAfter).to.be.greaterThan(DAIBalanceBefore);
-
-        // expect(value).to.be.equal(owner_DAI_bal_before);
-
- 
-    });
-
+   
   
 
 

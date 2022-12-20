@@ -129,8 +129,8 @@ contract WETH is IWETH {
     function approve(
         address spender,
         uint amount
-    ) external override onlyOwner returns (bool) {
-        _approve(_owner, spender, amount);
+    ) external override returns (bool) {
+        _approve(msg.sender, spender, amount);
         return true;
     }
 

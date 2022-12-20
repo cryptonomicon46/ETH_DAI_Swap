@@ -103,3 +103,8 @@ Deployer account 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021 balance is '0.037732
 WETH contract depoloyed at  0xd5aCB47829e407aD67BA3A1423e7ce387995D703
 npx hardhat verify "0xd5aCB47829e407aD67BA3A1423e7ce387995D703" --network mainnet
 https://etherscan.io/address/0xd5aCB47829e407aD67BA3A1423e7ce387995D703#code
+
+
+
+SWAP DAI TO ETH
+ npx hardhat test ./test/test_SwapToWEth.js --network localhost --grep "Contract Deployed"

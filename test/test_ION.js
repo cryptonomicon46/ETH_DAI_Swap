@@ -254,6 +254,41 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
 })
 
 
+it("Approve: Owner transfers to addr1, addr1 sets allowance for addr2, addr2 transfers back to owner", async function () {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+    
+ 
+    await expect(fusionToken.transfer(addr1.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+    console.log("addr1 balance:",await fusionToken.balanceOf(addr1.address));
+    
+    await expect(fusionToken.connect(addr1).approve(addr2.address,1000)).
+    to.emit(fusionToken,"Approval");   
+    
+    expect(await fusionToken.allowance(addr1.address,addr2.address)).to.equal(1000);
+
+    await expect(fusionToken.connect(addr2).transferFrom(addr1.address, owner.address, 500)).
+    to.emit(fusionToken,"Transfer");
+
+    expect(await fusionToken.allowance(addr1.address,addr2.address)).to.equal(500);
+    
+    await expect(fusionToken.connect(addr2).transferFrom(addr1.address, owner.address, 100)).
+    to.emit(fusionToken,"Transfer");
+
+    expect(await fusionToken.allowance(addr1.address,addr2.address)).to.equal(400);
+
+    await expect(fusionToken.connect(addr2).transferFrom(addr1.address, owner.address, 50)).
+    to.emit(fusionToken,"Transfer");
+
+    expect(await fusionToken.allowance(addr1.address,addr2.address)).to.equal(350);
+
+
+
+})
+
 
 
 
