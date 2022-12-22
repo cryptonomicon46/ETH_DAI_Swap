@@ -8,7 +8,9 @@ const { parse } = require("dotenv");
 
 
 const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
-const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+// const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"; //Mainnet WETH contract address
+const WETH_ADDRESS = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6"; //Goerli WETH contract address
+
 const SwapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564"; 
 
 const DAI_DECIMALS = 18; 
@@ -75,7 +77,7 @@ describe("SwapContract", function () {
         console.log(formatEther(bal1,18));
         const balDelta = formatEther((bal0- bal1).toString(),18);
         console.log("Amount Used for Swap:",balDelta);
-        await expect(Number(balDelta)).to.be.lessThanOrEqual(0.251);
+        await expect(Number(balDelta)).to.be.lessThanOrEqual(0.26);
         
     })
 

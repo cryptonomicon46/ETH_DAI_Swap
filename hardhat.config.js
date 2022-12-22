@@ -39,6 +39,16 @@ task(
  */
 module.exports = {
   solidity: "0.7.6",
+  settings: {
+    optimizer: {
+      enabled: true,
+      runs: 200,
+      details: {
+        yul: false
+      }
+    },
+  },
+  viaIR : true,
   defaultNetwork: "hardhat",
   paths: {
     artifacts: './src/artifacts',

@@ -3,6 +3,8 @@ const { parseEther } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
 
 const WETH_ADDRESS = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+const GWETH_ADDRESS = "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6";
+
 const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 const SwapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564"; 
 const UniswapV3Factory ="0x1F98431c8aD98523631AE4a59f267346ea31F984";
@@ -24,13 +26,17 @@ async function main() {
     // console.log("\n");
 
 
-    const SwapContract = await ethers.getContractFactory("SwapContract");
-    const swapContract = await SwapContract.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
-    console.log("SwapForDai contract depoloyed at ", swapContract.address);
-
     // const WETH = await ethers.getContractFactory("WETH");
     // const weth = await WETH.deploy();
     // console.log("WETH contract depoloyed at ", weth.address);
+
+
+    //Deploy on Goerli testnet, using the GWETH contract address
+    const SwapContract = await ethers.getContractFactory("SwapContract");
+    const swapContract = await SwapContract.deploy(GWETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
+    console.log("SwapForDai contract depoloyed at ", swapContract.address);
+
+
 
 
     console.log("\n");
