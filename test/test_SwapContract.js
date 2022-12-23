@@ -85,7 +85,7 @@ describe("SwapContract", function () {
         
     })
 
-    it("Wrap All ETH: swap must complete and emit event, check DAI balance after the swap!", async function () {
+    it("All: swap must complete and emit event, check DAI balance after the swap!", async function () {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
     
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
@@ -94,7 +94,7 @@ describe("SwapContract", function () {
     
     // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
 
-    const tx =  await swapContract.SwapAllETH_DAI({ value: parseEther("1") });
+    const tx =  await swapContract.SwapAllETH_DAI({ value: parseEther("1000") });
     const rc = await tx.wait(); // 0ms, as tx is already confirmed
     const event = rc.events.find(event => event.event === 'SwapCompleted');
     const [value] = event.args;
