@@ -42,14 +42,6 @@ contract SwapContract {
   
 
 
-function _deposit(uint _amountToUse) internal  {
-    uint amountToUse = _amountToUse;
-    console.log("ETH being deposted into the WETH contract...", amountToUse);
-    (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
-    require(success,"Deposit failed!");
-}
-
-  
 
   /// @notice SwapSomeETH_DAI takes in the user's ETH but only uses some ETH to wrap and swap to DAI 
     /// @dev The user gets a refund of the ETH amount not used to Wrap or swap. 
@@ -61,7 +53,9 @@ function _deposit(uint _amountToUse) internal  {
         _refund(msg.sender, amountToUse, msg.value);
         _deposit(address(this).balance);
         console.log("WETH Balance of this contract", address(this).balance);
-        uint amountInWETH = weth.balanceOf(address(this));
+        // uint amountInWETH = weth.balanceOf(address(this));
+        uint amountInWETH = _wethBal(address(this));
+
         console.log("Balance of address(this) after",amountInWETH);  
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
@@ -78,7 +72,8 @@ function _deposit(uint _amountToUse) internal  {
     function SwapAllETH_DAI() external payable returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
         _deposit(msg.value);
-        uint amountInWETH = weth.balanceOf(address(this));
+        // uint amountInWETH = weth.balanceOf(address(this));
+        uint amountInWETH = _wethBal(address(this));
         console.log("Balance of address(this) after",amountInWETH);      
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
@@ -168,10 +163,44 @@ function _deposit(uint _amountToUse) internal  {
         return WETH_ADDR;
     }
 
+function _deposit(uint _amountToUse) internal  {
+    uint amountToUse = _amountToUse;
+    console.log("ETH being deposted into the WETH contract...", amountToUse);
+    (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
+    require(success,"Deposit failed!");
+}
+
+  function _wethBal(address account) internal view returns (uint) {
+    return weth.balanceOf(account);
+  }
+  function _daiBal(address account) internal view returns (uint) {
+    return dai.balanceOf(account);
+  }
+
 
     ///@notice getContractBalance , returns the balance of the contract
     ///@dev onlyOwner modifier ensures that only the deployer can make this query
     function getContractBalance() external view onlyOwner returns (uint) {
         return address(this).balance;
+    }
+
+        ///@notice getContractWETHBalance , returns the balance of the contract
+    ///@dev onlyOwner modifier ensures that only the deployer can make this query
+    function getContractWETHBalance() external view onlyOwner returns (uint) {
+        return _wethBal(address(this));
+    }
+
+
+    ///@notice getWETHBalance , returns the WETH balance of the contract
+    ///@dev low level delegate call needed 
+    function getWETHBalance() external view returns (uint) {
+        return _wethBal(msg.sender);
+    }
+
+
+    ///@notice getDAIBalance , returns the WETH balance of the contract
+    ///@dev low level delegate call needed 
+    function getDAIBalance() external view returns (uint) {
+        return _daiBal(msg.sender);
     }
     }
