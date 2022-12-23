@@ -52,13 +52,7 @@ function _depositSignature() internal  {
     weth.transferFrom(address(this),msg.sender, weth.balanceOf(address(this)));
     console.log("Sender's balance after transferFrom:", weth.balanceOf(msg.sender));
 
-}
 
-function _depositSelector() internal  {
-    (bool success, ) = WETH_ADDR.call{value: msg.value}(
-        abi.encodeWithSelector(IWETH.deposit.selector));
-    require(success,"Deposit{Selector} failed!");
-}
 
 
 function _withdraw_Signature(uint wad) internal {

@@ -98,9 +98,10 @@ npx hardhat verify "" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E8
 
 Wrap_UnWrapETH on Goerli
 npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x017Bafc85843e4B13c90338323782752dc88Cb03" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
+npx hardhat verify "0xe4b330596778730B06fa461df17dDc5D3e924Ce6" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
 
-https://goerli.etherscan.io/address/0x017Bafc85843e4B13c90338323782752dc88Cb03#code
+https://goerli.etherscan.io/address/0xe4b330596778730B06fa461df17dDc5D3e924Ce6#code
+
 DEPLOLY WETH contract onto Goerli
 
 npx hardhat test ./test/test_WETH.js --network localhost
