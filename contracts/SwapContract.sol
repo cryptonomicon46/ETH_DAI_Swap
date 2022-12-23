@@ -42,8 +42,10 @@ contract SwapContract {
   
 
 
-function _deposit(uint amount) internal  {
-    (bool success, ) = WETH_ADDR.call{value: amount}(abi.encodeWithSignature("deposit()"));
+function _deposit(uint _amountToUse) internal  {
+    uint amountToUse = _amountToUse;
+    console.log("ETH being deposted into the WETH contract...", amountToUse);
+    (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
     require(success,"Deposit failed!");
 }
 
@@ -56,12 +58,11 @@ function _deposit(uint amount) internal  {
     function SwapSomeETH_DAI(uint amountToUse) external payable returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
-        console.log("ETH being wrapped...", amountToUse);
         _refund(msg.sender, amountToUse, msg.value);
-        console.log("Balance of this contract", address(this).balance);
         _deposit(address(this).balance);
+        console.log("WETH Balance of this contract", address(this).balance);
         uint amountInWETH = weth.balanceOf(address(this));
-        console.log("Balance of address(this) after",amountInWETH);      
+        console.log("Balance of address(this) after",amountInWETH);  
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
@@ -75,17 +76,14 @@ function _deposit(uint amount) internal  {
     /// @dev uses all the mag.value provided to wrap to WETH and then swap to DAI
     /// emits a SwapCompleted event
     function SwapAllETH_DAI() external payable returns (uint amountOut) {
-        console.log("Input ETH Amount=", msg.value);
-        weth.deposit{value: msg.value }();
-        weth.approve(address(this), msg.value);
-        uint amountInWETH = msg.value;
-        weth.transfer(address(this),amountInWETH);
-        amountInWETH = weth.balanceOf(address(this));
-        console.log("Balance of address(this) after",amountInWETH);
+        console.log("Amount Sent:", msg.value);
+        _deposit(msg.value);
+        uint amountInWETH = weth.balanceOf(address(this));
+        console.log("Balance of address(this) after",amountInWETH);      
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
-        amountOut = _swap(WETH_ADDR,DAI_ADDR,3000, amountInWETH);
+        amountOut = _swap(WETH_ADDR, DAI_ADDR,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
