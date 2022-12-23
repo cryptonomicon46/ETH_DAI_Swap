@@ -5,6 +5,7 @@ const { parseEther, formatEther } = require("ethers/lib/utils");
 const {time,loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { parse } = require("dotenv");
+const { format } = require("path");
 
 
 
@@ -22,11 +23,20 @@ const ercAbi = [
     // Authenticated Functions
     "function transfer(address to, uint amount) returns (bool)",
     "function allowance(address owner, uint spender) returns (uint)",
-    "function deposit() public payable",
     "function approve(address spender, uint256 amount) returns (bool)",
     "event Transfer(address indexed _from, address indexed _to, uint256 _value)",
   "event Approval(address indexed _owner, address indexed _spender, uint256 _value)"
   
+  ];
+
+
+  const ercAbi_weth = [
+    // Read-Only Functions
+ 
+    "function deposit() public payable",
+    "function withdraw(uint wad) public",
+    "function balanceOf(address owner) external view returns (uint256)",
+
   ];
 describe("Wrap and UnWrap ETH tests", function () {
 
@@ -37,14 +47,14 @@ describe("Wrap and UnWrap ETH tests", function () {
     const  Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
     const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(WETH_ADDRESS);
     await wrap_UnWrapETH.deployed();
-    const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, owner);
-    const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
-    console.log("DAI Contract Address:",DAI.address);
+    const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi_weth, owner);
+    // const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
+    // console.log("DAI Contract Address:",DAI.address);
     console.log("WETH Contract Address:",WETH.address);
     console.log("Contract Address:", wrap_UnWrapETH.address);
     console.log("Deployer Address", owner.address );
     
-    return {wrap_UnWrapETH, owner, addr1,addr2, WETH, DAI};
+    return {wrap_UnWrapETH, owner, addr1,addr2, WETH};
     }   
 
 
@@ -60,88 +70,22 @@ describe("Wrap and UnWrap ETH tests", function () {
   
 
 
-it("Signature: Sender deposits ETH to be wrapped into the contract using the signature functions", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH, DAI} = await loadFixture(deployFixture);
+it("Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
+    const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
-    let owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner Initial WETH Balance:", owner_bal);
-    // await (wrap_UnWrapETH.connect(owner).Wrap_ETH_Selector({value: parseEther("1.0")}))
+    const owner_InitbalWETH = await WETH.balanceOf(owner.address);
+    console.log("Owner Initial WETH Balance:", owner_InitbalWETH);
 
-    await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH_Signature({value: parseEther("1.0")})).
-    to.emit(wrap_UnWrapETH,"WrappedETH")
-    .withArgs(parseEther('1.0'));
+    await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH({value: parseEther("1.0")})).
+    to.emit(wrap_UnWrapETH,"WrappedETH").
+    withArgs(parseEther("1.0"));
 
+    const owner_FinalWETHbal = await WETH.balanceOf(owner.address);
+    console.log("Owner WETH Balance after unwrapping:", owner_FinalWETHbal);
 
-     owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner WETH Balance after wrapping:", owner_bal);
- 
-    await expect(wrap_UnWrapETH.connect(owner).UnWrap_WETH_Signature(parseEther("1.0"))).
-    to.emit(wrap_UnWrapETH,"UnWrappedWETH")
-    .withArgs(parseEther('1.0'));
+    const balDelta = formatEther((owner_FinalWETHbal- owner_InitbalWETH).toString(),18);
 
-    owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner WETH Balance after unwrapping:", owner_bal);
- 
-    // expect(ethers.utils.formatUnits(owner_FinalWethBal,18)).to.equal("1.0");
-
-});
-
-
-
-it("Selector: Sender deposits ETH to be wrapped into the contract using the selector functions", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH, DAI} = await loadFixture(deployFixture);
-
-    let owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner Initial WETH Balance:", owner_bal);
-    // await (wrap_UnWrapETH.connect(owner).Wrap_ETH_Selector({value: parseEther("1.0")}))
-
-    await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH_Selector({value: parseEther("1.0")})).
-    to.emit(wrap_UnWrapETH,"WrappedETH")
-    .withArgs(parseEther('1.0'));
-
-
-     owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner WETH Balance after wrapping:", owner_bal);
- 
-    // await expect(wrap_UnWrapETH.connect(owner).UnWrap_WETH_Selector(parseEther("1.0"))).
-    // to.emit(wrap_UnWrapETH,"UnWrappedWETH")
-    // .withArgs(parseEther('1.0'));
-    await expect(wrap_UnWrapETH.connect(owner).UnWrap_WETH_Signature(parseEther("1.0"))).
-    to.emit(wrap_UnWrapETH,"UnWrappedWETH")
-    .withArgs(parseEther('1.0'));
-
-    // owner_bal = await WETH.balanceOf(owner.address);
-    // console.log("Owner WETH Balance after unwrapping:", owner_bal);
- 
-    // expect(ethers.utils.formatUnits(owner_FinalWethBal,18)).to.equal("1.0");
-
-});
-
-
-
-it("DoesNotExist: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH, DAI} = await loadFixture(deployFixture);
-
-    let owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner Initial WETH Balance:", owner_bal);
-    // await (wrap_UnWrapETH.connect(owner).Wrap_ETH_Selector({value: parseEther("1.0")}))
-
-    await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH_doesNoExist({value: parseEther("1.0")})).
-    to.emit(wrap_UnWrapETH,"WrappedETH")
-    .withArgs(parseEther('1.0'));
-
-
-     owner_bal = await WETH.balanceOf(owner.address);
-    console.log("Owner WETH Balance after wrapping:", owner_bal);
- 
-    await expect(wrap_UnWrapETH.connect(owner).UnWrap_WETH_Signature(parseEther("1.0"))).
-    to.emit(wrap_UnWrapETH,"UnWrappedWETH")
-    .withArgs(parseEther('1.0'));
-
-    // owner_bal = await WETH.balanceOf(owner.address);
-    // console.log("Owner WETH Balance after unwrapping:", owner_bal);
- 
-    // expect(ethers.utils.formatUnits(owner_FinalWethBal,18)).to.equal("1.0");
+    expect(balDelta).to.equal("1.0");
 
 });
 
