@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
-import "./IWETH.sol";
+// import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
 
-// interface IWETH {
-//     function deposit() external payable;
-//     function withdraw(uint wad) external;
+interface IWETH {
+    function deposit() external payable;
+    function withdraw(uint wad) external;
 
-//     function balanceOf(address account) external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
 
-// }
+}
 
 ///@notice Wrap_UnWrapETH handles wrapping the unwrapping ETH to WETH for the caller
 contract Wrap_UnWrapETH  {
