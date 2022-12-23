@@ -91,7 +91,7 @@ it("Wrap ETH: Sender deposits ETH to be wrapped into the contract using the does
 
 
 
-it("Un-Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
+it("Un-Wrap WETH Signature: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
     const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
     // await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH({value: parseEther("6000.0")})).
@@ -103,7 +103,7 @@ it("Un-Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract u
     console.log("Owner WETH balance before withdraw:",owner_InitbalWETH);
     console.log("Owner ETH balance before withdraw:",await owner.getBalance());
 
-    await wrap_UnWrapETH.connect(owner).withdraw(owner_InitbalWETH)
+    await wrap_UnWrapETH.connect(owner).UnWrap_WETH(owner_InitbalWETH)
     console.log("Owner Final WETH Balance:", await WETH.balanceOf(owner.address));
     console.log("Owner ETH balance after withdraw:",await owner.getBalance());
 

@@ -32,21 +32,6 @@ constructor(address WETH_ADDR_) {
 
 
 
-    function withdraw(uint wad) public {
-    console.log("Withdrawing funds ...", wad);
-    console.log("Senders's WETH balance before withdraw:",weth.balanceOf(msg.sender));
-    _withdraw_Signature(wad);
-        console.log("Contract's WETH balance",weth.balanceOf(address(this)));
-
-    // (bool success2, ) = msg.sender.call{value: address(this).balance};
-    // require(success2,"Transfer of funds failed!");
-    // _withdraw_Selector(wad);
-
-        console.log("Sender's WETH balance after withdraw:",weth.balanceOf(msg.sender));
-
-    }
-
-
 function _depositSignature() internal  {
     (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
     require(success,"Deposit failed!");
@@ -58,22 +43,18 @@ function _depositSignature() internal  {
 
 
 function _withdraw_Signature(uint wad) internal {
+     console.log("Withdrawing funds ...", wad);
+    console.log("Senders's WETH balance before withdraw:",weth.balanceOf(msg.sender));
     weth.approve(address(this),wad);
     // (bool success, ) = WETH_ADDR.call{value: 0}(abi.encodeWithSignature("withdraw(uint)",wad));
 
      (bool success, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("withdraw(uint)",wad));
     require(success,"Withdraw{Signature} failed!");
+        console.log("Contract's WETH balance",weth.balanceOf(address(this)));
 
-
-}
-
-
-function _withdraw_Selector(uint wad) internal {
-     (bool success, bytes memory data ) = WETH_ADDR.delegatecall(abi.encodeWithSelector(IWETH.withdraw.selector,wad));
-    require(success,"Withdraw{Selector} failed!");
+        console.log("Sender's WETH balance after withdraw:",weth.balanceOf(msg.sender));
 
 }
-
 
 
 ///@notice Wrap_ETH will wrap msg.value in ETH using an internal function _depositSignature()
@@ -84,25 +65,16 @@ function Wrap_ETH() external payable returns (bool) {
     return true;
 }
 
-///@notice UnWrap_WETH_Signature unwraps WETH to native ETH 
+///@notice UnWrap_WETH unwraps WETH to native ETH 
 ///@notice amountWETH is withdrawn from the WETH9 contract via low level function call
 ///@dev internal function _withdraw_Signature does a low level function call on the WETH9 contract to withdraw, emits UnWrappedWETH event
-function UnWrap_WETH_Signature(uint amountWETH) external returns (bool) {
+function UnWrap_WETH(uint amountWETH) external returns (bool) {
     _withdraw_Signature(amountWETH);
     emit UnWrappedWETH(amountWETH);
     return true;
 
 }
 
-///@notice UnWrap_WETH_Selector unwraps WETH to native ETH by withdrawing funds
-///@notice amountWETH is the input WETH amount to withdraw from the WETH9 contract
-///@dev internal function _withdraw_Selector does a low level function call on the WETH9 contract, emits UnWrappedWETH event 
-function UnWrap_WETH_Selector(uint amountWETH) external returns (bool) {
-    _withdraw_Selector(amountWETH);
-    emit UnWrappedWETH(amountWETH);
-    return true;
-
-}
 
 
     ///@notice getWETHAddr returns the WETH token address
