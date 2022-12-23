@@ -2,17 +2,17 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
-// import "./IWETH.sol";
+import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
 
-interface IWETH {
-    function deposit() external payable;
-    function withdraw(uint wad) external;
+// interface IWETH {
+//     function deposit() external payable;
+//     function withdraw(uint wad) external;
 
-    function balanceOf(address account) external view returns (uint256);
+//     function balanceOf(address account) external view returns (uint256);
 
-}
+// }
 
 ///@notice Wrap_UnWrapETH handles wrapping the unwrapping ETH to WETH for the caller
 contract Wrap_UnWrapETH  {
@@ -29,6 +29,11 @@ constructor(address WETH_ADDR_) {
 }
 
 
+function _depositDoesNotExist() internal  {
+    (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("doesNotExist()"));
+    require(success,"Deposit failed, should've triggered the fallback!");
+}
+
 function _depositSignature() internal  {
     (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
     require(success,"Deposit failed!");
@@ -42,15 +47,25 @@ function _depositSelector() internal  {
 
 
 function _withdraw_Signature(uint wad) internal {
-     (bool success, ) = WETH_ADDR.call(abi.encodeWithSignature("withdraw(uint)",wad));
+     (bool success, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("withdraw(uint)",wad));
     require(success,"Withdraw{Signature} failed!");
 
 }
 
 
 function _withdraw_Selector(uint wad) internal {
-     (bool success, ) = WETH_ADDR.call(abi.encodeWithSelector(IWETH.withdraw.selector,wad));
+     (bool success, ) = WETH_ADDR.delegatecall(abi.encodeWithSelector(IWETH.withdraw.selector,wad));
     require(success,"Withdraw{Selector} failed!");
+
+}
+
+
+///@notice Wrap_ETH_doesNoExist will wrap msg.value in ETH 
+///@dev internal function _depositDoesNotExist triggers the fallback function in  WETH9 contract, emits WrappedETH event
+function Wrap_ETH_doesNoExist() external payable returns (bool) {
+    _depositDoesNotExist();
+    emit WrappedETH(msg.value);
+    return true;
 
 }
 ///@notice Wrap_ETH_Selector will wrap msg.value in ETH 
