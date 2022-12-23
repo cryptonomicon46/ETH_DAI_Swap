@@ -103,7 +103,7 @@ it("Un-Wrap WETH Signature: Sender deposits ETH to be wrapped into the contract 
     console.log("Owner WETH balance before withdraw:",owner_InitbalWETH);
     console.log("Owner ETH balance before withdraw:",await owner.getBalance());
 
-    await wrap_UnWrapETH.connect(owner).UnWrap_WETH(owner_InitbalWETH)
+    await wrap_UnWrapETH.connect(owner)._withdraw(owner_InitbalWETH)
     console.log("Owner Final WETH Balance:", await WETH.balanceOf(owner.address));
     console.log("Owner ETH balance after withdraw:",await owner.getBalance());
 

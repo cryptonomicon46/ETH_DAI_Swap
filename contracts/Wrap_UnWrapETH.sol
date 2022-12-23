@@ -5,7 +5,7 @@ pragma solidity =0.7.6;
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
-
+import "./IERC20.sol";
 
 
 // interface IWETH is IERC20 {
@@ -24,7 +24,7 @@ event UnWrappedWETH(uint amountWETH);
 event WrappedETH(uint amountETH);
 event Log(string func, uint gas);
 
-constructor(address WETH_ADDR_) {
+constructor(address WETH_ADDR_) payable {
     WETH_ADDR = WETH_ADDR_;
     weth = IWETH(WETH_ADDR);
     _owner = msg.sender;
@@ -32,7 +32,7 @@ constructor(address WETH_ADDR_) {
 
 
 
-function _depositSignature() internal  {
+function _deposit() internal  {
     (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
     require(success,"Deposit failed!");
     console.log("Contract's WETH balance", weth.balanceOf(address(this)));
@@ -42,17 +42,30 @@ function _depositSignature() internal  {
 }
 
 
-function _withdraw_Signature(uint wad) internal {
-     console.log("Withdrawing funds ...", wad);
-    console.log("Senders's WETH balance before withdraw:",weth.balanceOf(msg.sender));
+function _withdraw(uint wad) public {
+     console.log("Withdraw input:",wad);
+
+    console.log("Senders's WETH balance to withdraw:",weth.balanceOf(msg.sender));
+    console.log("Approving this contract for funds...", wad, msg.sender);
+    // (bool success1, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("approve(address,uint)",address(this),wad));
+    // require(success1,"Approve{delegatecall} failed!");
     weth.approve(address(this),wad);
-    // (bool success, ) = WETH_ADDR.call{value: 0}(abi.encodeWithSignature("withdraw(uint)",wad));
+    console.log("Transferring WETH balance of %s from sender to this contract...", wad);
 
-     (bool success, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("withdraw(uint)",wad));
-    require(success,"Withdraw{Signature} failed!");
-        console.log("Contract's WETH balance",weth.balanceOf(address(this)));
+    // (bool success2, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("transfer(address,uint)",address(this),wad));
+    // require(success2," transferFrom{delegatecall} failed!");
+    // weth.transferFrom(msg.sender,address(this),wad);
+    address(this).transfer(wad);
 
-        console.log("Sender's WETH balance after withdraw:",weth.balanceOf(msg.sender));
+    console.log("Contract's WETH balance after the transfer:",weth.balanceOf(address(this)));
+
+
+
+
+     (bool success3, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("withdraw(uint)",wad));
+    require(success3,"Withdraw{delegatecall} failed!");
+
+    console.log("Sender's WETH balance should be zero:",weth.balanceOf(msg.sender));
 
 }
 
@@ -60,16 +73,16 @@ function _withdraw_Signature(uint wad) internal {
 ///@notice Wrap_ETH will wrap msg.value in ETH using an internal function _depositSignature()
 ///@dev internal function _depositSignature does a low level function call on the WETH9 contract, emits WrappedETH event
 function Wrap_ETH() external payable returns (bool) {
-    _depositSignature();
+    _deposit();
     emit WrappedETH(msg.value);
     return true;
 }
 
 ///@notice UnWrap_WETH unwraps WETH to native ETH 
 ///@notice amountWETH is withdrawn from the WETH9 contract via low level function call
-///@dev internal function _withdraw_Signature does a low level function call on the WETH9 contract to withdraw, emits UnWrappedWETH event
+///@dev internal function _withdraw does a low level function call on the WETH9 contract to withdraw, emits UnWrappedWETH event
 function UnWrap_WETH(uint amountWETH) external returns (bool) {
-    _withdraw_Signature(amountWETH);
+    _withdraw(amountWETH);
     emit UnWrappedWETH(amountWETH);
     return true;
 

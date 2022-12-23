@@ -40,6 +40,17 @@ contract SwapContract {
     }
 
   
+
+
+function _deposit() internal  {
+    (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
+    require(success,"Deposit failed!");
+    console.log("Contract's WETH balance", weth.balanceOf(address(this)));
+    weth.transferFrom(address(this),msg.sender, weth.balanceOf(address(this)));
+    console.log("Sender's balance after transferFrom:", weth.balanceOf(msg.sender));
+
+}
+
   
 
   /// @notice SwapSomeETH_DAI takes in the user's ETH but only uses some ETH to wrap and swap to DAI 
@@ -51,16 +62,17 @@ contract SwapContract {
         console.log("Amount To use:", amountToUse);
         console.log("ETH being wrapped...", amountToUse);
         _refund(msg.sender, amountToUse, msg.value);
-        weth.deposit{value: amountToUse }();
-        weth.approve(address(this), amountToUse);
-        weth.transfer(address(this),amountToUse);
-        uint amountInWETH = weth.balanceOf(address(this));
-        console.log("Balance of address(this) after",amountInWETH);      
-        weth.approve(address(swapRouter), amountInWETH );
-        uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
-        console.log("Swap Router's allowance updated to:",getRouterAllowance);
-        amountOut = _swap(WETH, DAI,3000, amountInWETH);
-        console.log("amountOut:", amountOut);
+        _deposit()
+        // weth.deposit{value: amountToUse }();
+        // weth.approve(address(this), amountToUse);
+        // weth.transfer(address(this),amountToUse);
+        // uint amountInWETH = weth.balanceOf(address(this));
+        // console.log("Balance of address(this) after",amountInWETH);      
+        // weth.approve(address(swapRouter), amountInWETH );
+        // uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
+        // console.log("Swap Router's allowance updated to:",getRouterAllowance);
+        // amountOut = _swap(WETH, DAI,3000, amountInWETH);
+        // console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
 
@@ -151,7 +163,7 @@ contract SwapContract {
     function _sendETH(address payable account, uint _value) internal  {
         console.log("_sentEth function: Sending refund to \nAddr: %s \nETH Refund: %s", account, _value);
         (bool success, ) = payable(account).call{value: _value}("");
-        require(success, "Refund didn't go through successfully");
+        require(success, "Refund failed");
     }
 
     ///@notice getDAIAddr returns the DAI token address
