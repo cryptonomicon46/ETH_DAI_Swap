@@ -64,20 +64,24 @@ describe("SwapContract", function () {
 
 
 
-    it("Wrap Some ETH And Swap: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
+    it("Some: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
 
         // await (swapContract.WrapETH({value: parseEther("1.0")}));
         const bal0 = await owner.getBalance();
         console.log(formatEther(bal0,18));
-        await expect(swapContract.SwapSomeETH_DAI(parseEther("0.25"),{value: parseEther("1.0")})).
+        await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("500"),{value: parseEther("2000.0")})).
         to.emit(swapContract,"SwapCompleted");
 
         const bal1 = await owner.getBalance();
         console.log(formatEther(bal1,18));
         const balDelta = formatEther((bal0- bal1).toString(),18);
         console.log("Amount Used for Swap:",balDelta);
-        await expect(Number(balDelta)).to.be.lessThanOrEqual(0.26);
+        console.log("Amount refunded to the user",balDelta);
+
+        await expect(Number(balDelta)).to.be.greaterThanOrEqual(499.1);
+
+        await expect(Number(balDelta)).to.be.lessThanOrEqual(500.1);
         
     })
 

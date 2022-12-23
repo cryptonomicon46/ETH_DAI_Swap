@@ -21,8 +21,8 @@ contract SwapContract {
     address private _owner;
     IWETH private weth;
     IERC20 private dai;
-    address private WETH;
-    address private DAI;
+    address private WETH_ADDR;
+    address private DAI_ADDR;
 
     event SwapCompleted(uint _amount);
     event Refund(address _refunder, uint _value);
@@ -31,10 +31,10 @@ contract SwapContract {
             address  WETH_,
             address  DAI_,
             ISwapRouter _swapRouter)  payable {
-        WETH = WETH_;
-        DAI = DAI_;
-        weth = IWETH(WETH);
-        dai = IERC20(DAI);
+        WETH_ADDR = WETH_;
+        DAI_ADDR = DAI_;
+        weth = IWETH(WETH_ADDR);
+        dai = IERC20(DAI_ADDR);
         swapRouter = _swapRouter;
         _owner = msg.sender;
     }
@@ -42,13 +42,9 @@ contract SwapContract {
   
 
 
-function _deposit() internal  {
-    (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
+function _deposit(uint amount) internal  {
+    (bool success, ) = WETH_ADDR.call{value: amount}(abi.encodeWithSignature("deposit()"));
     require(success,"Deposit failed!");
-    console.log("Contract's WETH balance", weth.balanceOf(address(this)));
-    weth.transferFrom(address(this),msg.sender, weth.balanceOf(address(this)));
-    console.log("Sender's balance after transferFrom:", weth.balanceOf(msg.sender));
-
 }
 
   
@@ -62,17 +58,15 @@ function _deposit() internal  {
         console.log("Amount To use:", amountToUse);
         console.log("ETH being wrapped...", amountToUse);
         _refund(msg.sender, amountToUse, msg.value);
-        _deposit()
-        // weth.deposit{value: amountToUse }();
-        // weth.approve(address(this), amountToUse);
-        // weth.transfer(address(this),amountToUse);
-        // uint amountInWETH = weth.balanceOf(address(this));
-        // console.log("Balance of address(this) after",amountInWETH);      
-        // weth.approve(address(swapRouter), amountInWETH );
-        // uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
-        // console.log("Swap Router's allowance updated to:",getRouterAllowance);
-        // amountOut = _swap(WETH, DAI,3000, amountInWETH);
-        // console.log("amountOut:", amountOut);
+        console.log("Balance of this contract", address(this).balance);
+        _deposit(address(this).balance);
+        uint amountInWETH = weth.balanceOf(address(this));
+        console.log("Balance of address(this) after",amountInWETH);      
+        weth.approve(address(swapRouter), amountInWETH );
+        uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
+        console.log("Swap Router's allowance updated to:",getRouterAllowance);
+        amountOut = _swap(WETH_ADDR, DAI_ADDR,3000, amountInWETH);
+        console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
 
@@ -91,7 +85,7 @@ function _deposit() internal  {
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
-        amountOut = _swap(WETH,DAI,3000, amountInWETH);
+        amountOut = _swap(WETH_ADDR,DAI_ADDR,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
@@ -168,12 +162,12 @@ function _deposit() internal  {
 
     ///@notice getDAIAddr returns the DAI token address
     function getDAIAddr() external view returns (address){
-        return DAI;
+        return DAI_ADDR;
     }
 
     ///@notice getWETHAddr returns the WETH token address
     function getWETHAddr() external view returns (address) {
-        return WETH;
+        return WETH_ADDR;
     }
 
 

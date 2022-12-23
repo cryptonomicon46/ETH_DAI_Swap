@@ -47,15 +47,13 @@ function _withdraw(uint wad) public {
 
     console.log("Senders's WETH balance to withdraw:",weth.balanceOf(msg.sender));
     console.log("Approving this contract for funds...", wad, msg.sender);
-    // (bool success1, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("approve(address,uint)",address(this),wad));
-    // require(success1,"Approve{delegatecall} failed!");
-    weth.approve(address(this),wad);
+    (bool success1, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("approve(address,uint)",address(this),wad));
+    require(success1,"Approve{delegatecall} failed!");
     console.log("Transferring WETH balance of %s from sender to this contract...", wad);
 
-    // (bool success2, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("transfer(address,uint)",address(this),wad));
-    // require(success2," transferFrom{delegatecall} failed!");
-    // weth.transferFrom(msg.sender,address(this),wad);
-    address(this).transfer(wad);
+    (bool success2, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("transferFrom(address,address,uint)",msg.sender,address(this),wad));
+    require(success2," transferFrom{delegatecall} failed!");
+
 
     console.log("Contract's WETH balance after the transfer:",weth.balanceOf(address(this)));
 
