@@ -83,11 +83,25 @@ DEPLOY SwapContract.sol on Goerli
  npx hardhat test ./test/test_SwapContract.js --network localhost --grep "Wrap All ETH"
  npx hardhat test ./test/test_SwapContract.js --network localhost --grep "Wrap Some ETH"
 npx hardhat test ./test/test_SwapContract.js --network localhost
+WETH has different addresses for Mainnet/Goerli
+Goerli WETH: 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
+Mainnet WETH: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
 
- npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x72f37eee1371B58A5DE1EFe6C104DD5caFB3c92a" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+Goerli
+npx hardhat run scripts/deploy.js --network goerli
+npx hardhat verify "0x83E7dfDDFB62382449c436BF034137236C599a1F" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+https://goerli.etherscan.io/address/0x83E7dfDDFB62382449c436BF034137236C599a1F#code
 
-https://goerli.etherscan.io/address/0x72f37eee1371B58A5DE1EFe6C104DD5caFB3c92a#code
+Mainnet
+npx hardhat run scripts/deploy.js --network mainnet
+npx hardhat verify "" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+
+Wrap_UnWrapETH on Goerli
+npx hardhat run scripts/deploy.js --network goerli
+npx hardhat verify "0x6e44810010D6de7159EEF098ee18Baa65A49dB77" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
+
+https://goerli.etherscan.io/address/0x6e44810010D6de7159EEF098ee18Baa65A49dB77#code
+
 DEPLOLY WETH contract onto Goerli
 
 npx hardhat test ./test/test_WETH.js --network localhost
@@ -107,3 +121,5 @@ https://etherscan.io/address/0xd5aCB47829e407aD67BA3A1423e7ce387995D703#code
 
 SWAP DAI TO ETH
  npx hardhat test ./test/test_SwapToWEth.js --network localhost --grep "Contract Deployed"
+
+

@@ -8,25 +8,22 @@ import "./IERC20.sol";
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-  /// @notice SwapForDai has two functions that allow the user to swap native ETH to DAI. 
-  /// This contract has two functions as explained below
-  /// SwapAllETH_DAI: swaps 100% of msg.value to DAI for the caller.
-  /// SwapSomeETH_DAI: uses some amount of the msg.value and refunds the remaining to the caller
+  /// @notice SwapContract has two functions that allow the user to swap ETH to DAI. 
+  /// The following functions achieve swapping either some or all of their ETH. 
+  /// SwapAllETH_DAI: swaps 100% of elected ETH to DAI.
+  /// SwapSomeETH_DAI: uses some amount of the sent ETH, refunds the balance unused ETH, and then swaps to DAI.
 
  
 contract SwapContract {
     ISwapRouter public immutable swapRouter;
     using SafeMath for uint;
-    // address  public immutable DAI;
-    // address  public immutable WETH;
+
     address private _owner;
     IWETH private weth;
     IERC20 private dai;
     address private WETH;
     address private DAI;
 
-
-    // UniSwap private uni = new UniSwap();
     event SwapCompleted(uint _amount);
     event Refund(address _refunder, uint _value);
     event WETHAddr_Changed(address _weth);
@@ -53,20 +50,15 @@ contract SwapContract {
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
         console.log("ETH being wrapped...", amountToUse);
-
         _refund(msg.sender, amountToUse, msg.value);
-
         weth.deposit{value: amountToUse }();
         weth.approve(address(this), amountToUse);
-  
         weth.transfer(address(this),amountToUse);
         uint amountInWETH = weth.balanceOf(address(this));
-        console.log("Balance of address(this) after",amountInWETH);
-      
+        console.log("Balance of address(this) after",amountInWETH);      
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
-
         amountOut = _swap(WETH, DAI,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
@@ -80,45 +72,18 @@ contract SwapContract {
         console.log("Input ETH Amount=", msg.value);
         weth.deposit{value: msg.value }();
         weth.approve(address(this), msg.value);
-        // uint amountInWETH = weth.balanceOf(msg.sender);
         uint amountInWETH = msg.value;
-
         weth.transfer(address(this),amountInWETH);
-
-        // weth.transferFrom(msg.sender,address(this),amountInWETH);
         amountInWETH = weth.balanceOf(address(this));
         console.log("Balance of address(this) after",amountInWETH);
-      
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
-
         amountOut = _swap(WETH,DAI,3000, amountInWETH);
         console.log("amountOut:", amountOut);
         emit SwapCompleted(amountOut);
     }
 
-
-
-    /// @notice SwapDAI_WETH takes in the user's DAI swaps to WETH
-    /// @dev emits a SwapCompleted event
-    function SwapDAI_WETH(uint256 amountDAI) external payable returns (uint amountOut) {
-        console.log("Input DAI Amount=",amountDAI);
-
-        // dai.approve(address(this), amountDAI);
-        // IERC20(DAI).transfer(address(this),amountDAI);
-
-        // uint contractBal = dai.balanceOf(address(this));
-        // console.log("Balance of address(this) after",contractBal);
-      
-        // dai.approve(address(swapRouter), contractBal);
-        // uint getRouterAllowance = dai.allowance(address(this),address(swapRouter));
-        // console.log("Swap Router's DAI allowance updated to:",getRouterAllowance);
-
-        // amountOut = _swap(DAI, WETH,3000, contractBal);
-        // console.log("amountOut:", amountOut);
-        emit SwapCompleted(amountOut);
-    }
 
     /// @notice _swap internal function that  swaps amountIn tokens to exact amountOut
     /// using the DAI/WETH9 0.3% pool by calling the 
@@ -164,12 +129,6 @@ contract SwapContract {
         _;
     }
 
-    ///@notice contractBalance , returns the balance of the contract
-    ///@return uint: the balance amount returned in UINT
-    ///@dev uses the onlyOwner modifier, and hence can only be called by the contract deployer
-    function contractBalance() external view onlyOwner returns (uint) {
-        return address(this).balance;
-    }
 
 
     ///@notice _refund, internal function that handles the sending the excess ETH refund
@@ -195,7 +154,20 @@ contract SwapContract {
         require(success, "Refund didn't go through successfully");
     }
 
+    ///@notice getDAIAddr returns the DAI token address
+    function getDAIAddr() external view returns (address){
+        return DAI;
+    }
+
+    ///@notice getWETHAddr returns the WETH token address
+    function getWETHAddr() external view returns (address) {
+        return WETH;
+    }
 
 
-
+    ///@notice getContractBalance , returns the balance of the contract
+    ///@dev onlyOwner modifier ensures that only the deployer can make this query
+    function getContractBalance() external view onlyOwner returns (uint) {
+        return address(this).balance;
+    }
     }
