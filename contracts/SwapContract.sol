@@ -192,15 +192,15 @@ function _deposit(uint _amountToUse) internal  {
 
 
     ///@notice getWETHBalance , returns the WETH balance of the contract
-    ///@dev low level delegate call needed 
-    function getWETHBalance() external view returns (uint) {
-        return _wethBal(msg.sender);
+    ///@param account, balance of account address is returned
+    function getWETHBalance(address account) external view returns (uint) {
+        return _wethBal(account);
     }
 
 
     ///@notice getDAIBalance , returns the WETH balance of the contract
-    ///@dev low level delegate call needed 
-    function getDAIBalance() external view returns (uint) {
-        return _daiBal(msg.sender);
+    ///@param account, balance of account address is returned
+    function getDAIBalance(address account) external view returns (uint) {
+        return _daiBal(account);
     }
     }

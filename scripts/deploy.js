@@ -31,16 +31,14 @@ async function main() {
     // console.log("WETH contract depoloyed at ", weth.address);
 
 
+    // const Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
+    // const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
+    // console.log("Wrap_UnWrapETH contract depoloyed at ", wrap_UnWrapETH.address);
+
     //Deploy on Goerli testnet, using the GWETH contract address
-    // const SwapContract = await ethers.getContractFactory("SwapContract");
-    // const swapContract = await SwapContract.deploy(GWETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
-    // console.log("SwapForDai contract depoloyed at ", swapContract.address);
-
-    const Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
-    const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
-    console.log("Wrap_UnWrapETH contract depoloyed at ", wrap_UnWrapETH.address);
-
-
+    const SwapContract = await ethers.getContractFactory("SwapContract");
+    const swapContract = await SwapContract.deploy(GWETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
+    console.log("SwapForDai contract depoloyed at ", swapContract.address);
 
     console.log("\n");
 

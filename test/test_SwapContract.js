@@ -64,73 +64,76 @@ describe("SwapContract", function () {
 
 
 
-    it("Some: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
+    it("Some Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        console.log("Testing Swap Some ETH...");
+        console.log("Sent ETH:%s", 10);
+        console.log("Amount ETH to be used for the swap:%s", 5);
 
-        // await (swapContract.WrapETH({value: parseEther("1.0")}));
         const bal0 = await owner.getBalance();
-        console.log(formatEther(bal0,18));
         await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
         to.emit(swapContract,"SwapCompleted");
 
         const bal1 = await owner.getBalance();
-        console.log(formatEther(bal1,18));
+
         const balDelta = formatEther((bal0- bal1).toString(),18);
-        console.log("Amount Used for Swap:",balDelta);
-        console.log("Amount refunded to the user",balDelta);
+        console.log("Sender's ETH before before the swap:",formatEther(bal0,18));
+        console.log("Sender's ETH after the swap",formatEther(bal1,18));
+        console.log("Confirming the amount used after the swap:",balDelta);
 
         await expect(Number(balDelta)).to.be.greaterThanOrEqual(4.99);
-
         await expect(Number(balDelta)).to.be.lessThanOrEqual(5.1);
           // expect(value).to.be.equal(owner_DAI_bal_after);
-          const wethFinalBalanceUser = await swapContract.connect(owner).getWETHBalance();
-          const daiFinalBalanceUser = await swapContract.connect(owner).getDAIBalance();
+
+          const wethFinalBalanceUser = await swapContract.getWETHBalance(owner.address);
+          const daiFinalBalanceUser = await swapContract.getDAIBalance(owner.address);
           const wethFinalBalanceContract = await swapContract.connect(owner).getContractWETHBalance();
           const ethFinalBalanceContract = await swapContract.connect(owner).getContractBalance();
           expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
           expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
           expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-        console.log("WETH Final Balance:%s \n DAI Final Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
-        wethFinalBalanceUser,daiFinalBalanceUser ,wethFinalBalanceContract,ethFinalBalanceContract)
+          console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nUser's Final DAI Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
+          wethFinalBalanceUser,formatEther(daiFinalBalanceUser,18) ,wethFinalBalanceContract,ethFinalBalanceContract)
      
     })
 
     it("All: swap must complete and emit event, check DAI balance after the swap!", async function () {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
-    
+        console.log("Testing Swap All ETH...");
+        console.log("Sent ETH:%s", 10);
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
         const DAIBalanceBefore = Number(ethers.utils.formatUnits
             (owner_DAI_bal_before, 18))
     
     // const amountOUT  =  await swapETH2DAI.SwapETHToDai({ value: parseEther("1") })
 
-    const tx =  await swapContract.SwapAllETH_DAI({ value: parseEther("10") });
-    const rc = await tx.wait(); // 0ms, as tx is already confirmed
-    const event = rc.events.find(event => event.event === 'SwapCompleted');
-    const [value] = event.args;
-    console.log("SwapCompleted event value:",value);
+        const tx =  await swapContract.SwapAllETH_DAI({ value: parseEther("10") });
+        const rc = await tx.wait(); // 0ms, as tx is already confirmed
+        const event = rc.events.find(event => event.event === 'SwapCompleted');
+        const [value] = event.args;
+        console.log("SwapCompleted event value:",value);
 
-    const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
-    const DAIBalanceAfter = Number(ethers.utils.formatUnits
-        (owner_DAI_bal_after, 18))
-
-    console.log("DAI BALANCE BEFORE THE SWAP:",formatEther(owner_DAI_bal_before));
-
-    console.log("DAI BALANCE AFTER SWAP:",formatEther(owner_DAI_bal_after));
+        const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
+        const DAIBalanceAfter = Number(ethers.utils.formatUnits
+            (owner_DAI_bal_after, 18))
+        
+        console.log("Owner's DAI balance before the swap:",formatEther(owner_DAI_bal_after));
+        console.log("Owner's DAI balance after the swap:",formatEther(owner_DAI_bal_before));
 
         expect(DAIBalanceAfter).to.be.greaterThan(DAIBalanceBefore);
 
         // expect(value).to.be.equal(owner_DAI_bal_after);
-        const wethFinalBalanceUser = await swapContract.connect(owner).getWETHBalance();
-        const daiFinalBalanceUser = await swapContract.connect(owner).getDAIBalance();
+
+        const wethFinalBalanceUser = await swapContract.getWETHBalance(owner.address);
+        const daiFinalBalanceUser = await swapContract.getDAIBalance(owner.address);
         const wethFinalBalanceContract = await swapContract.connect(owner).getContractWETHBalance();
         const ethFinalBalanceContract = await swapContract.connect(owner).getContractBalance();
         expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
         expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
         expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-
-      console.log("WETH Final Balance:%s \n DAI Final Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
-      wethFinalBalanceUser,daiFinalBalanceUser ,wethFinalBalanceContract,ethFinalBalanceContract)
+        console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nUser's Final DAI Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
+        wethFinalBalanceUser,formatEther(daiFinalBalanceUser,18) ,wethFinalBalanceContract,ethFinalBalanceContract)
+ 
     });
 
 

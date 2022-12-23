@@ -87,10 +87,11 @@ WETH has different addresses for Mainnet/Goerli
 Goerli WETH: 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6
 Mainnet WETH: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
 
+
 Goerli
 npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x83E7dfDDFB62382449c436BF034137236C599a1F" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
-https://goerli.etherscan.io/address/0x83E7dfDDFB62382449c436BF034137236C599a1F#code
+npx hardhat verify "0x0455faC8e17B85184c99517F5C58A0330B82483f" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+https://goerli.etherscan.io/address/0x0455faC8e17B85184c99517F5C58A0330B82483f#code
 
 Mainnet
 npx hardhat run scripts/deploy.js --network mainnet
@@ -101,6 +102,7 @@ npx hardhat run scripts/deploy.js --network goerli
 npx hardhat verify "0x1329d29Fae82DE49a144ed874b015F74891c7a3d" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
 
 https://goerli.etherscan.io/address/0x1329d29Fae82DE49a144ed874b015F74891c7a3d#code
+
 DEPLOLY WETH contract onto Goerli
 
 npx hardhat test ./test/test_WETH.js --network localhost
