@@ -70,7 +70,7 @@ describe("Wrap and UnWrap ETH tests", function () {
   
 
 
-it("Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
+it("Wrap ETH: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
     const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
     const owner_InitbalWETH = await WETH.balanceOf(owner.address);
@@ -86,6 +86,39 @@ it("Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract usin
     const balDelta = formatEther((owner_FinalWETHbal- owner_InitbalWETH).toString(),18);
 
     expect(balDelta).to.equal("1.0");
+
+});
+
+
+
+it("Un-Wrap ETH Signature: Sender deposits ETH to be wrapped into the contract using the doesNotExist functions", async function() {
+    const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
+
+    // await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH({value: parseEther("6000.0")})).
+    // to.emit(wrap_UnWrapETH,"WrappedETH").
+    // withArgs(parseEther("6000.0"));
+
+    // console.log("Owner Initial ETH Balance:", await owner.getBalance());
+    const owner_InitbalWETH = await WETH.balanceOf(owner.address);
+    console.log("Owner WETH balance before withdraw:",owner_InitbalWETH);
+    console.log("Owner ETH balance before withdraw:",await owner.getBalance());
+
+    await wrap_UnWrapETH.connect(owner).withdraw(owner_InitbalWETH)
+    console.log("Owner Final WETH Balance:", await WETH.balanceOf(owner.address));
+    console.log("Owner ETH balance after withdraw:",await owner.getBalance());
+
+    // console.log("Owner Final ETH Balance:", await owner.getBalance());
+
+    // await expect(wrap_UnWrapETH.connect(owner).Wrap_ETH({value: parseEther("1.0")})).
+    // to.emit(wrap_UnWrapETH,"WrappedETH").
+    // withArgs(parseEther("1.0"));
+
+    // const owner_FinalWETHbal = await WETH.balanceOf(owner.address);
+    // console.log("Owner WETH Balance after unwrapping:", owner_FinalWETHbal);
+
+    // const balDelta = formatEther((owner_FinalWETHbal- owner_InitbalWETH).toString(),18);
+
+    // expect(balDelta).to.equal("1.0");
 
 });
 
