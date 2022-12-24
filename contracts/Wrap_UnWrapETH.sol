@@ -2,17 +2,11 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 pragma solidity =0.7.6;
 
-import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
-import "./IERC20.sol";
+import "./IWETH.sol";
 
 
-// interface IWETH is IERC20 {
-//     function deposit() external payable;
-
-//     function withdraw(uint amount) external;
-// }
 
 ///@notice Wrap_UnWrapETH handles wrapping the unwrapping ETH to WETH for the caller
 contract Wrap_UnWrapETH  {
@@ -20,71 +14,74 @@ contract Wrap_UnWrapETH  {
 address private WETH_ADDR;
 IWETH weth;
 address private _owner;
+mapping (address => uint) public wethDepositBalance;
 event UnWrappedWETH(uint amountWETH);
 event WrappedETH(uint amountETH);
 event Log(string func, uint gas);
-
+event deposit_NotHeld(uint amount);
+event deposit_holdWETH(uint amount);
 constructor(address WETH_ADDR_) payable {
     WETH_ADDR = WETH_ADDR_;
     weth = IWETH(WETH_ADDR);
     _owner = msg.sender;
 }
 
+///@notice deposit function will Wrap ETH and transfer WETH back to the sender,
+///@dev the contract doesn't hold the WETH funds. deposit_NotHeld(uint) event emitted
+function  deposit() external payable {
+    console.log("Depositing caller's ETH and transfer the WETH to the caller ...");
+    uint amount = msg.value;
+    weth.deposit{value: msg.value}();
+    weth.transfer(msg.sender,amount);
+    emit deposit_NotHeld(msg.value);
+    // console.log("Owner's WETH balance:",IWETH(WETH_ADDR).balanceOf(msg.sender));
+    
+}
 
+///@notice deposit_HoldWETH function will Wrap ETH and but hold the WETH funds in the contract
+///@dev an internal mapping wethDepositBalance[msg.sender] is updated to 
+///        track the sender's WETH balance to be withdrawn at a later stage
+///         deposit_holdWETH(uint) event emitted
+function  deposit_HoldWETH() external payable {
+    console.log("Depositing caller's ETH to be held in the contract...");
+    weth.deposit{value: msg.value}();
+    wethDepositBalance[msg.sender] += msg.value;
+    emit deposit_holdWETH(msg.value);
+    // console.log("Deposit balance updated:", wethDepositBalance[msg.sender] );
+    // console.log("Contract's WETH balance should be >0:",weth.balanceOf(address(this)));
 
-function _deposit() internal  {
-    (bool success, ) = WETH_ADDR.call{value: msg.value}(abi.encodeWithSignature("deposit()"));
-    require(success,"Deposit failed!");
-    console.log("Contract's WETH balance", weth.balanceOf(address(this)));
-    weth.transferFrom(address(this),msg.sender, weth.balanceOf(address(this)));
-    console.log("Sender's balance after transferFrom:", weth.balanceOf(msg.sender));
 
 }
 
+    /// @notice withdraw all of the sender's WETH balance being held in the contract
+    /// @dev Checks and effects pattern used, balances variables are updated
+    ///      before doing a low level call to transfer the sender's ETH funds
+    function withdraw() external payable {
+        uint256 value = weth.balanceOf(address(this));
+        uint256 senderBalance = wethDepositBalance[msg.sender];
+         require(value>= senderBalance,"Contract has insufficient funds");
+            weth.withdraw(senderBalance);
+            safeTransferETH(payable(msg.sender),address(this).balance);
 
-function _withdraw(uint wad) public {
-     console.log("Withdraw input:",wad);
+    }
+    // Function to receive Ether. msg.data must be empty
+    receive() external payable {}
 
-    console.log("Senders's WETH balance to withdraw:",weth.balanceOf(msg.sender));
-    console.log("Approving this contract for funds...", wad, msg.sender);
-    (bool success1, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("approve(address,uint)",address(this),wad));
-    require(success1,"Approve{delegatecall} failed!");
-    console.log("Transferring WETH balance of %s from sender to this contract...", wad);
-
-    (bool success2, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("transferFrom(address,address,uint)",msg.sender,address(this),wad));
-    require(success2," transferFrom{delegatecall} failed!");
-
-
-    console.log("Contract's WETH balance after the transfer:",weth.balanceOf(address(this)));
-
-
-
-
-     (bool success3, ) = WETH_ADDR.delegatecall(abi.encodeWithSignature("withdraw(uint)",wad));
-    require(success3,"Withdraw{delegatecall} failed!");
-
-    console.log("Sender's WETH balance should be zero:",weth.balanceOf(msg.sender));
-
-}
+    ///@notice safeTransferETH internal function performs the low level call function
+    function safeTransferETH(address payable to, uint256 value) internal {
+        (bool success, ) = to.call{value: value}(new bytes(0));
+        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
+    }
 
 
-///@notice Wrap_ETH will wrap msg.value in ETH using an internal function _depositSignature()
-///@dev internal function _depositSignature does a low level function call on the WETH9 contract, emits WrappedETH event
-function Wrap_ETH() external payable returns (bool) {
-    _deposit();
-    emit WrappedETH(msg.value);
-    return true;
-}
 
-///@notice UnWrap_WETH unwraps WETH to native ETH 
-///@notice amountWETH is withdrawn from the WETH9 contract via low level function call
-///@dev internal function _withdraw does a low level function call on the WETH9 contract to withdraw, emits UnWrappedWETH event
-function UnWrap_WETH(uint amountWETH) external returns (bool) {
-    _withdraw(amountWETH);
-    emit UnWrappedWETH(amountWETH);
-    return true;
 
-}
+    ///@notice checks if the msg.sender is the owner who deployed this contract
+    modifier onlyOwner() {
+        require(_owner == msg.sender, "Caller is not the owner");
+        _;
+    }
+
 
 
 
@@ -93,13 +90,38 @@ function UnWrap_WETH(uint amountWETH) external returns (bool) {
         return WETH_ADDR;
     }
 
-function getOwner() external view returns (address) {
-    return _owner;
-}
+    ///@notice getOwner returns the address that deployed the contract
+    function getOwner() external view returns (address) {
+        return _owner;
+    }
+    ///@notice getContractBalance , returns the balance of the contract
+    ///@dev onlyOwner modifier ensures that only the deployer can make this query
+    function getContractBalance() external view onlyOwner returns (uint) {
+        return address(this).balance;
+    }
 
- function getContractBalance() external view returns (uint) {
-    return address(this).balance;
- }
+        ///@notice getContractWETHBalance , returns the balance of the contract
+    ///@dev onlyOwner modifier ensures that only the deployer can make this query
+    function getContractWETHBalance() external view onlyOwner returns (uint) {
+        return _wethBal(address(this));
+    }
 
 
+    ///@notice getWETHBalance , returns the WETH balance of the contract
+    ///@param account, balance of account address is returned
+    function getWETHBalance(address account) external view returns (uint) {
+        return _wethBal(account);
+    }
+
+
+    ///@notice getETHBalance , returns the WETH balance of the contract
+    ///@param account, balance of account address is returned
+    function getETHBalance(address account) external view returns (uint) {
+        return account.balance;
+    }
+
+
+  function _wethBal(address account) internal view returns (uint) {
+    return weth.balanceOf(account);
+  }
 }
