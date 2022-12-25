@@ -2,6 +2,8 @@
 pragma solidity =0.7.6;
 pragma abicoder v2;
 
+
+
 import "hardhat/console.sol";
 import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "./IERC20.sol";
@@ -163,11 +165,21 @@ contract SwapContract {
         return WETH_ADDR;
     }
 
-function _deposit(uint _amountToUse) internal  {
-    uint amountToUse = _amountToUse;
-    console.log("ETH being deposted into the WETH contract...", amountToUse);
-    (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
-    require(success,"Deposit failed!");
+// Dangerous to use a delegatecall to another contract with a differetn layout of storage vars
+// function _deposit(uint _amountToUse) internal  {
+//     uint amountToUse = _amountToUse;
+//     console.log("ETH being deposted into the WETH contract...", amountToUse);
+//     (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
+//     require(success,"Deposit failed!");
+// }
+
+
+///@notice _deposit function will Wrap ETH and transfer WETH back to the sender,
+///@dev the contract doesn't hold the WETH funds. deposit_NotHeld(uint) event emitted
+function  _deposit(uint _amountToUse) internal  {
+    console.log("Depositing caller's ETH amount to use ...");
+    weth.deposit{value: _amountToUse}();
+
 }
 
   function _wethBal(address account) internal view returns (uint) {

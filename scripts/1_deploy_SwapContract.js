@@ -13,27 +13,12 @@ const NonfungiblePositionManager ="0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
 async function main() {
     const [deployer] = await ethers.getSigners();
   
-    console.log("\nDeploying contracts with the account:", deployer.address);
+    console.log("\nDeploying SwapContract with the account:", deployer.address);
     const deployerBal = await deployer.getBalance();
 
     // console.log("Account balance:", (await deployer.getBalance()).toString());
     console.log("Deployer account %s balance is %o ETH",deployer.address, ethers.utils.formatEther(deployerBal));
 
-
-    // const FusionToken = await ethers.getContractFactory("FusionToken");
-    // const fusionToken = await FusionToken.deploy();
-    // console.log("Fusion token depoloyed at ", fusionToken.address);
-    // console.log("\n");
-
-
-    // const WETH = await ethers.getContractFactory("WETH");
-    // const weth = await WETH.deploy();
-    // console.log("WETH contract depoloyed at ", weth.address);
-
-
-    // const Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
-    // const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
-    // console.log("Wrap_UnWrapETH contract depoloyed at ", wrap_UnWrapETH.address);
 
     //Deploy on Goerli testnet, using the GWETH contract address
     const SwapContract = await ethers.getContractFactory("SwapContract");

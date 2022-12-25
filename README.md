@@ -79,6 +79,7 @@ https://goerli.etherscan.io/address/0xa28Aae128E9193D659De6d25e4979499c41E9c19#c
 
 
 DEPLOY SwapContract.sol on Goerli
+npx hardhat run scripts/deploy.js --network goerli
 
  npx hardhat test ./test/test_SwapContract.js --network localhost --grep "Wrap All ETH"
  npx hardhat test ./test/test_SwapContract.js --network localhost --grep "Wrap Some ETH"
@@ -92,7 +93,7 @@ Mainnet DAI: 0x6B175474E89094C44Da98b954EedeAC495271d0F
 
 Goerli
 npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x2E4b8fbab83F808e9881FF1E6d38A612eF9c4E19" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
+npx hardhat verify "0x0cfE6161A5A5B6F9cBff10e5138af79Ba7058ebF" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
 https://goerli.etherscan.io/address/0x2E4b8fbab83F808e9881FF1E6d38A612eF9c4E19#code
 
 Mainnet
