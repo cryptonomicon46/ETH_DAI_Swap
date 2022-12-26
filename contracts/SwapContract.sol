@@ -25,10 +25,11 @@ contract SwapContract {
     IERC20 private dai;
     address private WETH_ADDR;
     address private DAI_ADDR;
-
+    bool private _stopped;
     event SwapCompleted(uint _amount);
     event Refund(address _refunder, uint _value);
     event WETHAddr_Changed(address _weth);
+    event ToggleStartStop(bool);
     constructor(
             address  WETH_,
             address  DAI_,
@@ -49,21 +50,20 @@ contract SwapContract {
     /// @dev The user gets a refund of the ETH amount not used to Wrap or swap. 
     ///  emits a SwapCompleted event
     ///
-    function SwapSomeETH_DAI(uint amountToUse) external payable returns (uint amountOut) {
+    function SwapSomeETH_DAI(uint amountToUse) external payable StopDeposits returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
         _refund(msg.sender, amountToUse, msg.value);
-        _deposit(address(this).balance);
+        _deposit(amountToUse);
         console.log("WETH Balance of this contract", address(this).balance);
-        // uint amountInWETH = weth.balanceOf(address(this));
-        uint amountInWETH = _wethBal(address(this));
-
-        console.log("Balance of address(this) after",amountInWETH);  
-        weth.approve(address(swapRouter), amountInWETH );
+        // uint amountInWETH = _wethBal(address(this));
+        // console.log("Balance of address(this) after",amountInWETH);  
+        // uint amountInWETH = _wethBal(address(this));
+        weth.approve(address(swapRouter), amountToUse );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
         console.log("Swap Router's allowance updated to:",getRouterAllowance);
-        amountOut = _swap(WETH_ADDR, DAI_ADDR,3000, amountInWETH);
-        console.log("amountOut:", amountOut);
+        amountOut = _swap(WETH_ADDR, DAI_ADDR,3000, amountToUse);
+        console.log("DAI balace to be withdrawn later:", dai.balanceOf(msg.sender));
         emit SwapCompleted(amountOut);
     }
 
@@ -71,11 +71,13 @@ contract SwapContract {
 /// @notice SwapAllETH_DAI takes in the user's ETH and wraps to WETH before the swap operation to DAI
     /// @dev uses all the mag.value provided to wrap to WETH and then swap to DAI
     /// emits a SwapCompleted event
-    function SwapAllETH_DAI() external payable returns (uint amountOut) {
+    function SwapAllETH_DAI() external payable StopDeposits returns (uint amountOut) {
         console.log("Amount Sent:", msg.value);
         _deposit(msg.value);
         // uint amountInWETH = weth.balanceOf(address(this));
-        uint amountInWETH = _wethBal(address(this));
+        // uint amountInWETH = _wethBal(address(this));
+        uint amountInWETH = msg.value;
+
         console.log("Balance of address(this) after",amountInWETH);      
         weth.approve(address(swapRouter), amountInWETH );
         uint getRouterAllowance = weth.allowance(address(this),address(swapRouter));
@@ -112,7 +114,7 @@ contract SwapContract {
             });
             //Executes the swap
         _amountOut = ISwapRouter(swapRouter).exactInputSingle(params);
-        console.log("amountOut=", _amountOut);     
+        // console.log("amountOut=", _amountOut);     
     }
 
 
@@ -126,10 +128,27 @@ contract SwapContract {
 
     ///@notice checks if the msg.sender is the owner who deployed this contract
     modifier onlyOwner() {
-        require(_owner == msg.sender, "Caller is not the owner");
+        require(_owner == msg.sender, "NOT_THE_OWNER");
         _;
     }
 
+
+
+    ///@notice if _stopped = false, then deposits are enabled, else disabled
+    modifier StopDeposits {
+        require(!_stopped,"DEPOSITS_DISABLED");
+        _;
+    }
+
+
+    
+
+
+    ///@notice ToggleContract, toggle stopped flag to stop deposits and only enable withdraws
+    function ToggleContract() onlyOwner public{
+        _stopped = !_stopped;
+        emit ToggleStartStop(_stopped);
+    }
 
 
     ///@notice _refund, internal function that handles the sending the excess ETH refund
@@ -174,8 +193,8 @@ contract SwapContract {
 // }
 
 
-///@notice _deposit function will Wrap ETH and transfer WETH back to the sender,
-///@dev the contract doesn't hold the WETH funds. deposit_NotHeld(uint) event emitted
+///@notice _deposit function will Wrap ETH and hold the WETH amount to use for the DAI swap.
+///@dev the contract deson't transfer WETH back to the sender, it holds it.
 function  _deposit(uint _amountToUse) internal  {
     console.log("Depositing caller's ETH amount to use ...");
     weth.deposit{value: _amountToUse}();
@@ -215,4 +234,8 @@ function  _deposit(uint _amountToUse) internal  {
     function getDAIBalance(address account) external view returns (uint) {
         return _daiBal(account);
     }
+
+
+
+
     }

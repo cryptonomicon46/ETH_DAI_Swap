@@ -55,7 +55,7 @@ describe("SwapContract", function () {
 
   it("Contract Deployed: Deploy contract and check for proper address!", async function () {
     
-    const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
     expect(swapContract.address).to.be.a.properAddress;
 
   });
@@ -64,11 +64,64 @@ describe("SwapContract", function () {
 
 
 
-    it("Some Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
+  it("Toggle Contract: In case of an emergency toggle contract state", async function() {
+    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+    
+    
+    await expect(swapContract.connect(addr1).ToggleContract()).
+    to.be.reverted;
+
+
+
+    await expect(swapContract.connect(owner).ToggleContract()).
+    to.emit(swapContract,"ToggleStartStop").
+    withArgs(true);
+
+
+    await expect(swapContract.connect(owner).ToggleContract()).
+    to.emit(swapContract,"ToggleStartStop").
+    withArgs(false);
+
+
+    await expect(swapContract.connect(owner).ToggleContract()).
+    to.emit(swapContract,"ToggleStartStop").
+    withArgs(true);
+
+   
+
+ 
+})
+
+
+it("Toggle Contract to stop and try to swap: In case of an emergency toggle contract state", async function() {
+    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+    
+    
+
+    await expect(swapContract.connect(owner).ToggleContract()).
+    to.emit(swapContract,"ToggleStartStop").
+    withArgs(true);
+
+    await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
+    to.be.revertedWith("DEPOSITS_DISABLED");
+   
+    await expect(swapContract.connect(owner).ToggleContract()).
+    to.emit(swapContract,"ToggleStartStop").
+    withArgs(false);
+    
+    await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
+    to.emit(swapContract,"SwapCompleted");
+ 
+})
+
+    it("Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
         console.log("Testing Swap Some ETH...");
         console.log("Sent ETH:%s", 10);
         console.log("Amount ETH to be used for the swap:%s", 5);
+        const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
+        const DAIBalanceBefore = Number(ethers.utils.formatUnits
+            (owner_DAI_bal_before, 18))
 
         const bal0 = await owner.getBalance();
         await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
@@ -77,23 +130,22 @@ describe("SwapContract", function () {
         const bal1 = await owner.getBalance();
 
         const balDelta = formatEther((bal0- bal1).toString(),18);
-        console.log("Sender's ETH before before the swap:",formatEther(bal0,18));
-        console.log("Sender's ETH after the swap",formatEther(bal1,18));
-        console.log("Confirming the amount used after the swap:",balDelta);
+
+        const owner_DAI_bal_after = await DAI.balanceOf(owner.address);
+        const DAIBalanceAfter = Number(ethers.utils.formatUnits
+            (owner_DAI_bal_after, 18))
 
         await expect(Number(balDelta)).to.be.greaterThanOrEqual(4.99);
         await expect(Number(balDelta)).to.be.lessThanOrEqual(5.1);
-          // expect(value).to.be.equal(owner_DAI_bal_after);
+    
+        expect(DAIBalanceAfter).to.be.greaterThan(DAIBalanceBefore);
 
-          const wethFinalBalanceUser = await swapContract.getWETHBalance(owner.address);
-          const daiFinalBalanceUser = await swapContract.getDAIBalance(owner.address);
-          const wethFinalBalanceContract = await swapContract.connect(owner).getContractWETHBalance();
-          const ethFinalBalanceContract = await swapContract.connect(owner).getContractBalance();
-          expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
-          expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
-          expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-          console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nUser's Final DAI Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
-          wethFinalBalanceUser,formatEther(daiFinalBalanceUser,18) ,wethFinalBalanceContract,ethFinalBalanceContract)
+
+        console.log("Confirming the amount used after the swap:",balDelta);
+        console.log("Owner's DAI balance before the swapp:%s", DAIBalanceBefore);
+        console.log("Owner's DAI balance after the swapp:%s", DAIBalanceAfter);
+
+    
      
     })
 
@@ -125,15 +177,13 @@ describe("SwapContract", function () {
         // expect(value).to.be.equal(owner_DAI_bal_after);
 
         const wethFinalBalanceUser = await swapContract.getWETHBalance(owner.address);
-        const daiFinalBalanceUser = await swapContract.getDAIBalance(owner.address);
         const wethFinalBalanceContract = await swapContract.connect(owner).getContractWETHBalance();
         const ethFinalBalanceContract = await swapContract.connect(owner).getContractBalance();
         expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
         expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
         expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-        console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nUser's Final DAI Balance:%s:\nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
-        wethFinalBalanceUser,formatEther(daiFinalBalanceUser,18) ,wethFinalBalanceContract,ethFinalBalanceContract)
- 
+        console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
+        wethFinalBalanceUser,wethFinalBalanceContract,ethFinalBalanceContract)
     });
 
 
