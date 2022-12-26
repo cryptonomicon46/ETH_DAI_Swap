@@ -93,26 +93,6 @@ describe("SwapContract", function () {
 })
 
 
-it("Toggle Contract to stop and try to swap: In case of an emergency toggle contract state", async function() {
-    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
-    
-    
-
-    await expect(swapContract.connect(owner).ToggleContract()).
-    to.emit(swapContract,"ToggleStartStop").
-    withArgs(true);
-
-    await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
-    to.be.revertedWith("DEPOSITS_DISABLED");
-   
-    await expect(swapContract.connect(owner).ToggleContract()).
-    to.emit(swapContract,"ToggleStartStop").
-    withArgs(false);
-    
-    await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
-    to.emit(swapContract,"SwapCompleted");
- 
-})
 
     it("Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
         const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
@@ -176,20 +156,55 @@ it("Toggle Contract to stop and try to swap: In case of an emergency toggle cont
 
         // expect(value).to.be.equal(owner_DAI_bal_after);
 
-        const wethFinalBalanceUser = await swapContract.getWETHBalance(owner.address);
-        const wethFinalBalanceContract = await swapContract.connect(owner).getContractWETHBalance();
-        const ethFinalBalanceContract = await swapContract.connect(owner).getContractBalance();
-        expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
-        expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
-        expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-        console.log("\nConfirming the final balances:\nWETH Final Balance:%s \nContract's Final WETH Balance:%s \nContract's Final ETH Balance", 
-        wethFinalBalanceUser,wethFinalBalanceContract,ethFinalBalanceContract)
+       
     });
 
 
 
 
-   
+    it("Toggle Contract to stop some ETH swap: In case of an emergency toggle contract state", async function() {
+        const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+        
+        
+    
+        await expect(swapContract.connect(owner).ToggleContract()).
+        to.emit(swapContract,"ToggleStartStop").
+        withArgs(true);
+    
+        await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
+        to.be.revertedWith("DEPOSITS_DISABLED");
+       
+        await expect(swapContract.connect(owner).ToggleContract()).
+        to.emit(swapContract,"ToggleStartStop").
+        withArgs(false);
+    
+        await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
+        to.emit(swapContract,"SwapCompleted");
+     
+    })
+    
+    
+    it("Toggle Contract to stop ALL ETH swap: In case of an emergency toggle contract state", async function() {
+        const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+        
+        
+    
+        await expect(swapContract.connect(owner).ToggleContract()).
+        to.emit(swapContract,"ToggleStartStop").
+        withArgs(true);
+    
+        await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("5"),{value: parseEther("10.0")})).
+        to.be.revertedWith("DEPOSITS_DISABLED");
+       
+        await expect(swapContract.connect(owner).ToggleContract()).
+        to.emit(swapContract,"ToggleStartStop").
+        withArgs(false);
+    
+        await expect(swapContract.connect(owner).SwapAllETH_DAI({value: parseEther("10.0")})).
+        to.emit(swapContract,"SwapCompleted");
+     
+    })
+    
   
 
 
