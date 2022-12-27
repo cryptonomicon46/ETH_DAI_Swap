@@ -9,9 +9,10 @@ const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
 const SwapRouterAddress = "0xE592427A0AEce92De3Edee1F18E0157C05861564"; 
 const UniswapV3Factory ="0x1F98431c8aD98523631AE4a59f267346ea31F984";
 const NonfungiblePositionManager ="0xC36442b4a4522E871399CD717aBDD847Ab11FE88";
+const {console} = require("console");
 
 async function main() {
-    const [deployer] = await ethers.getSigners();
+    const [deployer,addr1,addr2,addr3,addr4] = await ethers.getSigners();
   
     console.log("\nDeploying SwapContract with the account:", deployer.address);
     const deployerBal = await deployer.getBalance();
@@ -26,6 +27,14 @@ async function main() {
     console.log("SwapForDai contract depoloyed at ", swapContract.address);
 
     console.log("\n");
+
+
+
+    console.log("\nDeploying NOTEOA with the account addr4:", deployer.address);
+
+    const NOTEOA = await ethers.getContractFactory("NOTEOA");
+    const nOTEOA = await NOTEOA.connect(addr4).deploy(swapContract.address);
+    console.log("NOTEOA contract depoloyed at ", nOTEOA.address);
 
   }
   

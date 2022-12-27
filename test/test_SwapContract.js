@@ -31,6 +31,9 @@ const ercAbi = [
 
 ];
 
+const NOTEOA_abi = [
+    "function callDepositAllETH() internal"
+]
 
 // We connect to the Contract using a Provider, so we will only
 // have read-only access to the Contract
@@ -43,19 +46,57 @@ describe("SwapContract", function () {
 
     [owner,addr1,addr2] = await ethers.getSigners();
     const  SwapContract = await ethers.getContractFactory("SwapContract");
+    console.log("Deploying SwapContract ...\n");
     const swapContract = await SwapContract.deploy(WETH_ADDRESS,DAI_ADDRESS,SwapRouterAddress);
     await swapContract.deployed();
+    console.log("Swap contract deployed at %s:", swapContract.address);
+    console.log("\nDeploying NOTEOA contract...\n");
+    
+    const NOTEOA = await ethers.getContractFactory("NOTEOA");
+    const notEOA = await NOTEOA.connect(addr1).deploy(swapContract.address);
     const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi, owner);
     const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
+
     console.log("DAI Contract Address:",DAI.address);
     console.log("GETH Contract Address:",WETH.address);
-    return {swapContract, owner, WETH,DAI};
+    return {swapContract, owner, addr1,WETH,DAI,notEOA};
     }   
 
 
-  it("Contract Deployed: Deploy contract and check for proper address!", async function () {
+    it("Contract deposit SomeETH: External contracts aren't allowed to interact, only EOAs can deposit ETH", async function() {
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
+        await expect(notEOA.connect(owner).callDepositSwapSomeETH()).
+        to.be.revertedWith("NOT_THE_OWNER");
+
+        await expect(notEOA.connect(addr1).callDepositSwapSomeETH()).
+        to.be.revertedWith("NOT_ALLOWED_TO_PARTICIPATE_SwapSomeETH");
     
-    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+        await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("0.5"),{value: parseEther("1.0")})).
+        to.emit(swapContract,"SwapCompleted");
+
+  
+
+    })
+
+
+    it("Contract deposit AllETH: External contracts aren't allowed to interact, only EOAs can deposit ETH", async function() {
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
+        await expect(notEOA.connect(owner).callDepositSwapAllETH()).
+        to.be.revertedWith("NOT_THE_OWNER")
+
+        await expect(notEOA.connect(addr1).callDepositSwapAllETH()).
+        to.be.revertedWith("NOT_ALLOWED_TO_PARTICIPATE_SwapAllETH")
+
+        await expect(swapContract.connect(owner).SwapAllETH_DAI({value: parseEther("1.0")})).
+        to.emit(swapContract,"SwapCompleted");
+        
+    })
+
+
+
+  it("Contract deployed: Deploy contract and check for proper address!", async function () {
+    
+    const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
     expect(swapContract.address).to.be.a.properAddress;
 
   });
@@ -65,7 +106,7 @@ describe("SwapContract", function () {
 
 
   it("Toggle Contract: In case of an emergency toggle contract state", async function() {
-    const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+    const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
     
     
     await expect(swapContract.connect(addr1).ToggleContract()).
@@ -95,7 +136,7 @@ describe("SwapContract", function () {
 
 
     it("Some ETH: Only uses amountTOUse to wrap Wraps ETH to WETH and emits an event", async function() {
-        const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
         console.log("Testing Swap Some ETH...");
         console.log("Sent ETH:%s", 10);
         console.log("Amount ETH to be used for the swap:%s", 5);
@@ -130,7 +171,7 @@ describe("SwapContract", function () {
     })
 
     it("All: swap must complete and emit event, check DAI balance after the swap!", async function () {
-        const {swapContract, owner,WETH,DAI} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
         console.log("Testing Swap All ETH...");
         console.log("Sent ETH:%s", 10);
         const owner_DAI_bal_before = await DAI.balanceOf(owner.address);
@@ -163,7 +204,7 @@ describe("SwapContract", function () {
 
 
     it("Toggle Contract to stop some ETH swap: In case of an emergency toggle contract state", async function() {
-        const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
         
         
     
@@ -185,7 +226,7 @@ describe("SwapContract", function () {
     
     
     it("Toggle Contract to stop ALL ETH swap: In case of an emergency toggle contract state", async function() {
-        const {swapContract, owner,WETH,DAI,addr1} = await loadFixture(deploySwapFixture);
+        const {swapContract, owner,addr1,WETH,DAI,notEOA} = await loadFixture(deploySwapFixture);
         
         
     
@@ -205,7 +246,6 @@ describe("SwapContract", function () {
      
     })
     
-  
 
 
 });

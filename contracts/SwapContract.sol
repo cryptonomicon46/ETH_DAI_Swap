@@ -9,16 +9,17 @@ import '@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol';
 import "./IERC20.sol";
 import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
-  /// @notice SwapContract has two functions that allow the user to swap ETH to DAI. 
-  /// The following functions achieve swapping either some or all of their ETH. 
-  /// SwapAllETH_DAI: swaps 100% of elected ETH to DAI.
-  /// SwapSomeETH_DAI: uses some amount of the sent ETH, refunds the balance unused ETH, and then swaps to DAI.
+/// @title Swaps ETH to DAI by first wrapping it into WETH
+/// @author Sandip Nallani
+/// @notice Uses Uniswap's V3 router contract to perform the swap
+/// @dev Contract holds the WETH after depositing caller's ETH. 
 
- 
 contract SwapContract {
     ISwapRouter public immutable swapRouter;
     using SafeMath for uint;
+    using Address for address;
 
     address private _owner;
     IWETH private weth;
@@ -51,6 +52,8 @@ contract SwapContract {
     ///  emits a SwapCompleted event
     ///
     function SwapSomeETH_DAI(uint amountToUse) external payable StopDeposits returns (uint amountOut) {
+        address account = msg.sender;
+        require(!account.isContract(),"ONLY_EOAs_ALLOWED");
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
         _refund(msg.sender, amountToUse, msg.value);
@@ -72,6 +75,13 @@ contract SwapContract {
     /// @dev uses all the mag.value provided to wrap to WETH and then swap to DAI
     /// emits a SwapCompleted event
     function SwapAllETH_DAI() external payable StopDeposits returns (uint amountOut) {
+        address account = msg.sender;
+        if(account.isContract()) 
+        {    console.log("EOAs_ONLY");
+            revert("EOAs_ONLY");
+            } else {
+                console.log("EOA_ADDRESS_ALLOWED");
+            }
         console.log("Amount Sent:", msg.value);
         _deposit(msg.value);
         // uint amountInWETH = weth.balanceOf(address(this));
@@ -169,6 +179,7 @@ contract SwapContract {
     ///@param account: payable account that'll get the refund in ETH
     ///@param _value: amount of ETH to be refunded to the account
     function _sendETH(address payable account, uint _value) internal  {
+
         console.log("_sentEth function: Sending refund to \nAddr: %s \nETH Refund: %s", account, _value);
         (bool success, ) = payable(account).call{value: _value}("");
         require(success, "Refund failed");
@@ -183,14 +194,6 @@ contract SwapContract {
     function getWETHAddr() external view returns (address) {
         return WETH_ADDR;
     }
-
-// Dangerous to use a delegatecall to another contract with a differetn layout of storage vars
-// function _deposit(uint _amountToUse) internal  {
-//     uint amountToUse = _amountToUse;
-//     console.log("ETH being deposted into the WETH contract...", amountToUse);
-//     (bool success, ) = WETH_ADDR.call{value: amountToUse}(abi.encodeWithSignature("deposit()"));
-//     require(success,"Deposit failed!");
-// }
 
 
 ///@notice _deposit function will Wrap ETH and hold the WETH amount to use for the DAI swap.

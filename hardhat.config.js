@@ -1,6 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 require("@nomiclabs/hardhat-etherscan");
+require('solidity-coverage');
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const GOERLI_URL_ALCHEMY = process.env.GOERLI_URL_ALCHEMY;

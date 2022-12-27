@@ -6,7 +6,10 @@ import "./IWETH.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
 
-
+/// @title WETH contract with all it's functions
+/// @author Sandip Nallani
+/// @notice This is the full ERC20 version of the WETH contract
+/// @dev User deposits ETH to hold a WETH balance, withdraws WETH to get back ETH 
 contract WETH is IWETH {
 
     using SafeMath for uint;

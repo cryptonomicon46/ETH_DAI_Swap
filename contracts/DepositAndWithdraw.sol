@@ -8,8 +8,8 @@ import "./IWETH.sol";
 
 
 
-///@notice Wrap_UnWrapETH handles wrapping the unwrapping ETH to WETH for the caller
-contract Wrap_UnWrapETH  {
+///@notice DepositAndWithdraw handles wrapping the unwrapping ETH to WETH for the caller
+contract DepositAndWithdraw  {
 
 address private WETH_ADDR;
 IWETH weth;

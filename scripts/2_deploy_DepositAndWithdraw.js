@@ -21,9 +21,9 @@ async function main() {
 
 
 
-    const Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
-    const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
-    console.log("Wrap_UnWrapETH contract depoloyed at ", wrap_UnWrapETH.address);
+    const DepositAndWithdraw = await ethers.getContractFactory("DepositAndWithdraw");
+    const depositAndWithdraw = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
+    console.log("Wrap_UnWrapETH contract depoloyed at ", depositAndWithdraw.address);
 
  
     console.log("\n");

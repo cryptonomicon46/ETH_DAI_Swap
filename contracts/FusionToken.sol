@@ -4,8 +4,13 @@ pragma solidity =0.7.6;
 
 import "./IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "hardhat/console.sol";
 
 
+/// @title FusionToken is minted for the owner, has all ERC20 capabilities
+/// @author Sandip Nallani
+/// @notice This will be used to create an ION/DAI pool on Uniswap V3
+/// @dev Some kind of ETH to DAI swap to be implemented using the ION/DAI pool 
 contract FusionToken is IERC20 {
 
     using SafeMath for uint;
@@ -133,6 +138,7 @@ contract FusionToken is IERC20 {
         address recipient,
         uint amount
     ) external  override returns (bool) {
+        console.log("transfer recipient:", recipient);
         _transfer(msg.sender,recipient,amount);
         return true;
     }
@@ -148,7 +154,7 @@ contract FusionToken is IERC20 {
         uint amount
     ) internal {
         require(_balance[sender] >= amount,"INSUFFICIENT_FOR_TRANSFER");
-        require(recipient != address(0),"INVALID_RECIPIENT");
+        require(recipient != address(0),"ADDRESSZERO_ERROR");
         _balance[sender]= _balance[sender].sub(amount);
         _balance[recipient]= _balance[recipient].add(amount);
         emit Transfer(sender,recipient,amount);

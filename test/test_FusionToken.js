@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { BigNumber } = require("ethers");
+const { BigNumber, constants } = require("ethers");
 const { parseEther, formatEther } = require("ethers/lib/utils");
 const {time,loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
@@ -16,7 +16,7 @@ const SYMBOL = "ION";
 // have read-only access to the Contract
 
 
-describe("ION Token Tests", function () {
+describe("Fusion Token (ION) Tests", function () {
 
 
     async function deployTokenFixture() {
@@ -135,7 +135,23 @@ it("Burn Success: Owner is allowed to burn tokens", async function() {
 
 
 
-it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", async function() {
+it("Mint and transfer to address_zero: Owner mints tokens, transfers some tokens to addr1", async function() {
+    const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+    const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+    await expect(fusionToken.connect(owner.address).transfer(ethers.constants.AddressZero,1000)).
+    to.be.revertedWith("ADDRESSZERO_ERROR","UNSUPPORTED_OPERATION");
+
+
+})
+
+
+it("Mint and transfer more than balance: Owner mints tokens, transfers some tokens to addr1", async function() {
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
@@ -147,8 +163,21 @@ it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1", asyn
     await expect(fusionToken.connect(owner.address).transfer(addr1.address,1001)).
     to.be.revertedWith("INSUFFICIENT_FOR_TRANSFER");
 
-    await expect(fusionToken.connect(owner).transfer(addr1.address,1000)).
+
+})
+
+it("Mint and transfer: Owner mints tokens, transfers some tokens to addr1, checks transfer event args", async function() {
+    const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
     to.emit(fusionToken,"Transfer");
+
+    const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+    await expect(fusionToken.connect(owner).transfer(addr1.address,1000)).
+    to.emit(fusionToken,"Transfer").
+    withArgs(owner.address,addr1.address,1000);
 
     const new_ownerBal = await fusionToken.balanceOf(owner.address);
     // console.log(new_ownerBal);

@@ -44,36 +44,36 @@ describe("Wrap and UnWrap ETH tests", function () {
     async function deployFixture() {
 
     [owner,addr1,addr2] = await ethers.getSigners();
-    const  Wrap_UnWrapETH = await ethers.getContractFactory("Wrap_UnWrapETH");
-    const wrap_UnWrapETH = await Wrap_UnWrapETH.deploy(WETH_ADDRESS);
-    await wrap_UnWrapETH.deployed();
+    const  DepositAndWithdraw = await ethers.getContractFactory("DepositAndWithdraw");
+    const depositAndWithdraw = await DepositAndWithdraw.deploy(WETH_ADDRESS);
+    await depositAndWithdraw.deployed();
     const WETH = new ethers.Contract(WETH_ADDRESS, ercAbi_weth, owner);
     // const DAI = new ethers.Contract(DAI_ADDRESS, ercAbi, owner);
     // console.log("DAI Contract Address:",DAI.address);
     console.log("WETH Contract Address:",WETH.address);
-    console.log("Contract Address:", wrap_UnWrapETH.address);
+    console.log("Contract Address:", depositAndWithdraw.address);
     console.log("Deployer Address", owner.address );
     
-    return {wrap_UnWrapETH, owner, addr1,addr2, WETH};
+    return {depositAndWithdraw, owner, addr1,addr2, WETH};
     }   
 
 
   it("Contract Deployed: check contract address to be a proper address", async function () {
 
-    const {wrap_UnWrapETH} = await loadFixture(deployFixture);
-    expect(wrap_UnWrapETH.address).to.be.a.properAddress;
+    const {depositAndWithdraw} = await loadFixture(deployFixture);
+    expect(depositAndWithdraw.address).to.be.a.properAddress;
   });
 
   
 
   it("Deposit, WETH Not Held: Sender deposits ETH, contract transfers back WETH to sender", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
+    const {depositAndWithdraw, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
     const owner_InitbalWETH = await WETH.balanceOf(owner.address);
     console.log("Owner Initial WETH Balance:", owner_InitbalWETH);
 
-    await expect(wrap_UnWrapETH.deposit({value: parseEther("1.0")})).
-    to.emit(wrap_UnWrapETH,"deposit_NotHeld").
+    await expect(depositAndWithdraw.deposit({value: parseEther("1.0")})).
+    to.emit(depositAndWithdraw,"deposit_NotHeld").
     withArgs(parseEther("1.0"));
 
     const owner_FinalWETHbal = await WETH.balanceOf(owner.address);
@@ -84,9 +84,9 @@ describe("Wrap and UnWrap ETH tests", function () {
     expect(balDelta).to.equal("1.0");
 
 
-    const wethFinalBalanceUser = await wrap_UnWrapETH.getWETHBalance(owner.address);
-    const wethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractWETHBalance();
-    const ethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractBalance();
+    const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
+    const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
+    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractBalance();
     expect(wethFinalBalanceUser).to.be.equal(parseEther("1.0"));
     expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
     expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
@@ -94,18 +94,18 @@ describe("Wrap and UnWrap ETH tests", function () {
 });
 
 it("Deposit Hold WETH: Sender deposits ETH, contract holds the WETH", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
+    const {depositAndWithdraw, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
     const owner_InitbalWETH = await WETH.balanceOf(owner.address);
     console.log("Owner Initial WETH Balance:", owner_InitbalWETH);
 
-    await expect(wrap_UnWrapETH.deposit_HoldWETH({value: parseEther("1.0")})).
-    to.emit(wrap_UnWrapETH,"deposit_holdWETH").
+    await expect(depositAndWithdraw.deposit_HoldWETH({value: parseEther("1.0")})).
+    to.emit(depositAndWithdraw,"deposit_holdWETH").
     withArgs(parseEther("1.0"));
 
-    const wethFinalBalanceUser = await wrap_UnWrapETH.getWETHBalance(owner.address);
-    const wethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractWETHBalance();
-    const ethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractBalance();
+    const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
+    const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
+    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractBalance();
     expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
     expect(wethFinalBalanceContract).to.be.equal(parseEther("1.0"));
     expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
@@ -114,7 +114,7 @@ it("Deposit Hold WETH: Sender deposits ETH, contract holds the WETH", async func
 
 
 it("Withdraw: Sender tries to withdraw from WETH contract", async function() {
-    const {wrap_UnWrapETH, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
+    const {depositAndWithdraw, owner,addr1,addr2,WETH} = await loadFixture(deployFixture);
 
     const owner_InitbalWETH = await WETH.balanceOf(owner.address);
     const owner_InitbalETH = await owner.getBalance();
@@ -122,9 +122,9 @@ it("Withdraw: Sender tries to withdraw from WETH contract", async function() {
     console.log("Owner WETH balance before withdraw:",owner_InitbalWETH);
     console.log("Owner ETH balance before withdraw:",await owner.getBalance());
 
-    await (wrap_UnWrapETH.connect(owner).deposit_HoldWETH({value: parseEther("1.0")}))
+    await (depositAndWithdraw.connect(owner).deposit_HoldWETH({value: parseEther("1.0")}))
 
-    await wrap_UnWrapETH.connect(owner).withdraw();
+    await depositAndWithdraw.connect(owner).withdraw();
 
     const owner_FinalWETHbal = await WETH.balanceOf(owner.address);
     const owner_FinalETHbal = await owner.getBalance();
@@ -141,15 +141,15 @@ it("Withdraw: Sender tries to withdraw from WETH contract", async function() {
     expect(owner_FinalWETHbal).to.equal(parseEther("0.0"));
     expect(owner_FinalWETHbal).to.equal(parseEther("0.0"));
 
-    const wethFinalBalanceUser = await wrap_UnWrapETH.getWETHBalance(owner.address);
-    const wethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractWETHBalance();
-    const ethFinalBalanceContract = await wrap_UnWrapETH.connect(owner).getContractBalance();
+    const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
+    const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
+    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractBalance();
     expect(wethFinalBalanceUser).to.be.equal(parseEther("0.0"));
     expect(wethFinalBalanceContract).to.be.equal(parseEther("0.0"));
     expect(ethFinalBalanceContract).to.be.equal(parseEther("0.0"));
 
 
-    // console.log(wrap_UnWrapETH.getBalance())
+    // console.log(depositAndWithdraw.getBalance())
 });
 
   

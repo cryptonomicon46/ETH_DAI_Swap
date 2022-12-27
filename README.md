@@ -94,7 +94,7 @@ Mainnet DAI: 0x6B175474E89094C44Da98b954EedeAC495271d0F
 Goerli
 npx hardhat run scripts/deploy.js --network goerli
 npx hardhat verify "0x0cfE6161A5A5B6F9cBff10e5138af79Ba7058ebF" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" "0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
-https://goerli.etherscan.io/address/0x2E4b8fbab83F808e9881FF1E6d38A612eF9c4E19#code
+https://goerli.etherscan.io/address/0x0cfE6161A5A5B6F9cBff10e5138af79Ba7058ebF#code
 
 Mainnet
 npx hardhat run scripts/deploy.js --network mainnet
@@ -127,3 +127,25 @@ SWAP DAI TO ETH
  npx hardhat test ./test/test_SwapToWEth.js --network localhost --grep "Contract Deployed"
 
 
+
+
+Test coverage
+yarn add solidity-coverage --dev
+
+
+npx hardhat coverage --testfiles "test/test_SwapContract.js"
+
+npx hardhat coverage --testfiles "test/*.js"
+-------------------------|----------|----------|----------|----------|----------------|
+File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered Lines |
+-------------------------|----------|----------|----------|----------|----------------|
+ contracts/              |    77.17 |    46.97 |    70.15 |    79.38 |                |
+  DepositAndWithdraw.sol |    86.96 |       50 |    76.92 |    89.29 |      90,95,120 |
+  FusionToken.sol        |      100 |       65 |      100 |      100 |                |
+  IERC20.sol             |      100 |      100 |      100 |      100 |                |
+  IWETH.sol              |      100 |      100 |      100 |      100 |                |
+  SwapContract.sol       |    78.57 |       50 |    52.63 |    83.33 |... 221,228,235 |
+  WETH.sol               |    45.16 |    22.22 |    52.94 |    44.74 |... 147,148,149 |
+-------------------------|----------|----------|----------|----------|----------------|
+All files                |    77.17 |    46.97 |    70.15 |    79.38 |                |
+-------------------------|----------|----------|----------|----------|----------------|

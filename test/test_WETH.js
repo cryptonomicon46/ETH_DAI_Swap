@@ -5,7 +5,7 @@ const { parseEther, formatEther } = require("ethers/lib/utils");
 const {time,loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { parse } = require("dotenv");
-
+const {console} = require("console");
 
 
 const DECIMAL = 18;
@@ -64,6 +64,17 @@ describe("Wrapped Ether ERC20 Token Tests", function () {
 
 
   
+  it("Check Decimal: Check the decimal places for the Fusion token.", async function() {
+    const {weth_token} = await loadFixture(deployTokenFixture);
+    const decimal = await weth_token.decimal();
+    console.log(decimal);
+    expect(decimal).to.be.equal(DECIMAL);
+})
+
+it("Check owner address: Confirm the contract owner address.", async function() {
+    const {weth_token,owner} = await loadFixture(deployTokenFixture);
+    expect(await weth_token.owner()).to.be.equal(owner.address);
+})
 
 
 
