@@ -95,34 +95,14 @@ describe("Wrap and UnWrap ETH tests", function () {
 
     const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
     const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
-    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractBalance();
     expect(wethFinalBalanceUser).to.be.equal(parseEther("1.0"));
     expect(wethFinalBalanceContract).to.be.equal(parseEther("0"));
-    expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
 
 });
 
-// it("Wrap ETH: Sender deposits ETH, contract holds the WETH", async function() {
-//     const {depositAndWithdraw, owner, addr1,addr2, weth_token} = await loadFixture(deployFixture);
-
-//     const owner_InitbalWETH = await weth_token.balanceOf(owner.address);
-//     console.log("Owner Initial WETH Balance:", owner_InitbalWETH);
-
-//     await expect(depositAndWithdraw.Wrap_ETH({value: parseEther("1.0")})).
-//     to.emit(depositAndWithdraw,"deposit").
-//     withArgs(parseEther("1.0"));
-
-//     const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
-//     const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
-//     const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractBalance();
-//     expect(wethFinalBalanceUser).to.be.equal(parseEther("0"));
-//     expect(wethFinalBalanceContract).to.be.equal(parseEther("1.0"));
-//     expect(ethFinalBalanceContract).to.be.equal(parseEther("0"));
-
-// });
 
 
-it("UnWrap All WETH: Sender tries to withdraw all of the WETH balance", async function() {
+it("UnWrap All WETH-1: Sender tries to withdraw all of the WETH balance", async function() {
     const {depositAndWithdraw, owner, addr1,addr2, weth_token} = await loadFixture(deployFixture);
 
     // const owner_InitbalWETH = await weth_token.balanceOf(owner.address);
@@ -174,19 +154,85 @@ it("UnWrap All WETH: Sender tries to withdraw all of the WETH balance", async fu
     console.log(formatEther(owner_InitbalETH,18));
     console.log(formatEther(owner_FinalETHbal,18));
     const balDeltaETH = Number(formatEther((owner_InitbalETH- owner_FinalETHbal).toString(),18));
-    expect((balDeltaETH)).to.be.lessThanOrEqual((0.001));
+    expect((balDeltaETH)).to.be.lessThanOrEqual((10.001));
 
 
     const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
     const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
+    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractETHBalance();
+
     expect(wethFinalBalanceUser).to.be.equal(parseEther("0.0"));
     expect(wethFinalBalanceContract).to.be.equal(parseEther("0.0"));
+    expect(ethFinalBalanceContract).to.be.equal(parseEther("0.0"));
 
 
 });
 
   
 
+
+it("UnWrap All WETH-2: Sender tries to withdraw all of the WETH balance", async function() {
+    const {depositAndWithdraw, owner, addr1,addr2, weth_token} = await loadFixture(deployFixture);
+
+    // const owner_InitbalWETH = await weth_token.balanceOf(owner.address);
+
+
+    // await (depositAndWithdraw.connect(owner).deposit_HoldWETH({value: parseEther("1.0")}))
+
+    await expect(depositAndWithdraw.Wrap_ETH({value: parseEther("10.0")})).
+    to.emit(depositAndWithdraw,"deposit").
+    withArgs(parseEther("10.0"));
+
+
+    const owner_InitbalETH = await owner.getBalance();
+
+    // console.log("Owner WETH balance before withdraw:",owner_InitbalWETH);
+    console.log("Owner ETH balance after depositing:",await owner.getBalance());
+
+
+    const owner_InitbalWETH = await weth_token.balanceOf(owner.address);
+
+    await weth_token.connect(owner).approve(depositAndWithdraw.address,owner_InitbalWETH);
+
+    const owner_allowance = await weth_token.connect(owner).allowance(owner.address,depositAndWithdraw.address);
+   await expect(owner_allowance).to.be.equal(parseEther("10"));
+    console.log("Owner set's the contract allowance to %s WETH", formatEther(owner_allowance,18));
+
+
+
+    await expect(depositAndWithdraw.UnWrap_WETH(parseEther("10"))).
+    to.emit(depositAndWithdraw,"withdraw").
+    withArgs(parseEther("10"));
+
+
+    await expect(depositAndWithdraw.UnWrap_WETH(parseEther("1"))).
+    to.be.revertedWith("INSUFFICIENT_USER_WETH_FUNDS");
+
+    const owner_FinalETHbal = await owner.getBalance();
+    const owner_FinalWETHbal = await weth_token.balanceOf(owner.address);
+
+    console.log("Owner Final WETH Balance after unwrapping:", owner_FinalWETHbal );
+    expect(owner_FinalWETHbal).to.equal(parseEther("0.0"));
+
+    // const balDeltaWETH = formatEther((owner_InitbalWETH- owner_FinalWETHbal).toString(),18);
+    // expect(balDeltaWETH).to.be.equal(("0.0"));
+
+    console.log(formatEther(owner_InitbalETH,18));
+    console.log(formatEther(owner_FinalETHbal,18));
+    const balDeltaETH = Number(formatEther((owner_InitbalETH- owner_FinalETHbal).toString(),18));
+    expect((balDeltaETH)).to.be.lessThanOrEqual((10.001));
+
+
+    const wethFinalBalanceUser = await depositAndWithdraw.getWETHBalance(owner.address);
+    const wethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractWETHBalance();
+    const ethFinalBalanceContract = await depositAndWithdraw.connect(owner).getContractETHBalance();
+
+    expect(wethFinalBalanceUser).to.be.equal(parseEther("0.0"));
+    expect(wethFinalBalanceContract).to.be.equal(parseEther("0.0"));
+    expect(ethFinalBalanceContract).to.be.equal(parseEther("0.0"));
+
+
+});
 
 
 

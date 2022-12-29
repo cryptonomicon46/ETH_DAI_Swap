@@ -52,7 +52,7 @@ function  Wrap_ETH() external payable {
     /// @dev Checks and effects pattern used, WETH balance variable is updated
     ///      before doing a low level call to transfer WETH to the user
     ///      emits a withdraw event 
-    function UnWrap_WETH(uint wad) external payable {
+    function UnWrap_WETH(uint wad) external {
         console.log("User wishes the contrac to unwrap %s WETH", wad);
         console.log("User sets contract allowance at %s WETH", weth.allowance(msg.sender, address(this)));
 
@@ -63,7 +63,7 @@ function  Wrap_ETH() external payable {
             console.log("Contract's ETH balance:",address(this).balance);
 
             // wethDepositBalance[msg.sender] = wethDepositBalance[msg.sender].sub(wad);
-            // safeTransferETH(payable(msg.sender),wad);
+            safeTransferETH(payable(msg.sender),wad);
             emit withdraw(wad);
     }
     // // Function to receive Ether. msg.data must be empty
@@ -97,6 +97,12 @@ function  Wrap_ETH() external payable {
         return _owner;
     }
 
+
+        ///@notice getContractETHBalance , returns the ETH balance of the contract
+    ///@dev onlyOwner modifier ensures that only the deployer can make this query
+    function getContractETHBalance() external view onlyOwner returns (uint) {
+        return (address(this).balance);
+    }
 
         ///@notice getContractWETHBalance , returns the balance of the contract
     ///@dev onlyOwner modifier ensures that only the deployer can make this query

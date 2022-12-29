@@ -13,8 +13,8 @@ import "hardhat/console.sol";
 contract WETH is IWETH {
 
     using SafeMath for uint;
-    string private _name= "Wrapped Ether";
-    string private _symbol = "WETH";
+    string private _name= "Wrapped Ether Test";
+    string private _symbol = "WETH-Test";
     uint private _decimal = 18;
     address private _owner;
     uint private _totalSupply;
@@ -87,7 +87,7 @@ contract WETH is IWETH {
         address dst,
         uint wad
     ) external override returns (bool) {
-        require(_allowance[src][msg.sender] >= wad,"INSUFFICIENT_ALLOWANCE!");
+        require(wad <= _allowance[src][msg.sender],"INSUFFICIENT_ALLOWANCE!");
         _transfer(src,dst,wad);
         _approve(src, msg.sender, _allowance[src][msg.sender].sub(wad));
         return true;

@@ -100,11 +100,30 @@ Mainnet
 npx hardhat run scripts/deploy.js --network mainnet
 npx hardhat verify "" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
 
-Deposit and Withdraw on Goerli
-npx hardhat run scripts/deploy.js --network goerli
-npx hardhat verify "0x1329d29Fae82DE49a144ed874b015F74891c7a3d" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
+DepositAndWithdraw on Goerli
+npx hardhat run scripts/2_deploy_DepositAndWithdraw.js --network goerli
 
-https://goerli.etherscan.io/address/0x1329d29Fae82DE49a144ed874b015F74891c7a3d#code
+
+Deploying WETH and DepositAndWithdraw contract with the account: 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021
+Deployer account 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021 balance is '0.961227081912468166' ETH
+WETH contract depoloyed at  0x91761E31588ddB57386225055cE2B993Ae07081f
+
+DepositAndWithdraw contract depoloyed at 0x179760bbBA596FED47F88b38bFA717DECee353cb using the 0x91761E31588ddB57386225055cE2B993Ae07081f WETH contract deployed 
+
+
+
+DepositAndWithdraw
+
+npx hardhat verify "0x179760bbBA596FED47F88b38bFA717DECee353cb" "0x91761E31588ddB57386225055cE2B993Ae07081f" --network goerli
+
+https://goerli.etherscan.io/address/0x179760bbBA596FED47F88b38bFA717DECee353cb#code
+
+WETH:
+npx hardhat verify "0x91761E31588ddB57386225055cE2B993Ae07081f" --network goerli
+
+https://goerli.etherscan.io/address/0x91761E31588ddB57386225055cE2B993Ae07081f#code
+
+
 
 DEPLOLY WETH contract onto Goerli
 
