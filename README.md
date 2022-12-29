@@ -100,7 +100,7 @@ Mainnet
 npx hardhat run scripts/deploy.js --network mainnet
 npx hardhat verify "" "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2" "0x6B175474E89094C44Da98b954EedeAC495271d0F" "0xE592427A0AEce92De3Edee1F18E0157C05861564" --network goerli
 
-Wrap_UnWrapETH on Goerli
+Deposit and Withdraw on Goerli
 npx hardhat run scripts/deploy.js --network goerli
 npx hardhat verify "0x1329d29Fae82DE49a144ed874b015F74891c7a3d" "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6" --network goerli
 

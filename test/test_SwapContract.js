@@ -5,6 +5,7 @@ const { parseEther, formatEther } = require("ethers/lib/utils");
 const {time,loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { parse } = require("dotenv");
+const { ADDRESS_ZERO } = require("@uniswap/v3-sdk");
 
 
 const DAI_ADDRESS = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
@@ -73,8 +74,8 @@ describe("SwapContract", function () {
     
         await expect(swapContract.connect(owner).SwapSomeETH_DAI(parseEther("0.5"),{value: parseEther("1.0")})).
         to.emit(swapContract,"SwapCompleted");
+        // console.log("DAI Contract balance:",await (dai).getBalance());
 
-  
 
     })
 

@@ -56,6 +56,9 @@ contract SwapContract {
         require(!account.isContract(),"ONLY_EOAs_ALLOWED");
         console.log("Amount Sent:", msg.value);
         console.log("Amount To use:", amountToUse);
+        console.log("WETH Supply:", WETH_ADDR.balance);
+        console.log("DAI Supply:", DAI_ADDR.balance);
+
         _refund(msg.sender, amountToUse, msg.value);
         _deposit(amountToUse);
         console.log("WETH Balance of this contract", address(this).balance);
@@ -76,14 +79,13 @@ contract SwapContract {
     /// emits a SwapCompleted event
     function SwapAllETH_DAI() external payable StopDeposits returns (uint amountOut) {
         address account = msg.sender;
-        if(account.isContract()) 
-        {    console.log("EOAs_ONLY");
-            revert("EOAs_ONLY");
-            } else {
-                console.log("EOA_ADDRESS_ALLOWED");
-            }
+        require(!account.isContract(),"ONLY_EOAs_ALLOWED");
         console.log("Amount Sent:", msg.value);
+        console.log("WETH Supply:", WETH_ADDR.balance);
+        console.log("DAI Supply:", DAI_ADDR.balance);
+
         _deposit(msg.value);
+    
         // uint amountInWETH = weth.balanceOf(address(this));
         // uint amountInWETH = _wethBal(address(this));
         uint amountInWETH = msg.value;

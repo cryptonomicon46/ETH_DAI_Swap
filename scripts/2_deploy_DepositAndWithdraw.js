@@ -20,9 +20,13 @@ async function main() {
     console.log("Deployer account %s balance is %o ETH",deployer.address, ethers.utils.formatEther(deployerBal));
 
 
+    const WETH = await ethers.getContractFactory("WETH");
+    const weth = await WETH.deploy();
+    console.log("WETH contract depoloyed at ", weth.address);
+
 
     const DepositAndWithdraw = await ethers.getContractFactory("DepositAndWithdraw");
-    const depositAndWithdraw = await Wrap_UnWrapETH.deploy(GWETH_ADDRESS);
+    const depositAndWithdraw = await DepositAndWithdraw.deploy(GWETH_ADDRESS);
     console.log("Wrap_UnWrapETH contract depoloyed at ", depositAndWithdraw.address);
 
  
