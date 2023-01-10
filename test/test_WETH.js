@@ -5,12 +5,11 @@ const { parseEther, formatEther } = require("ethers/lib/utils");
 const {time,loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { parse } = require("dotenv");
-const {console} = require("console");
 
 
 const DECIMAL = 18;
-const NAME = "Wrapped Ether";
-const SYMBOL = "WETH";
+const NAME = "Wrapped Ether Test";
+const SYMBOL = "WETH-Test";
 
 // We connect to the Contract using a Provider, so we will only
 // have read-only access to the Contract

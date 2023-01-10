@@ -1,0 +1,126 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+pragma solidity =0.7.6;
+pragma abicoder v2;
+import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Factory.sol";
+import "./IERC20.sol";
+
+contract CreateUniPools {
+
+    address public constant GDAI = 0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4;
+    address public constant DAI = 0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60;
+    address public constant ION = 0xa28Aae128E9193D659De6d25e4979499c41E9c19;
+    address public constant WETH_TEST = 0x91761E31588ddB57386225055cE2B993Ae07081f;
+    address public constant WETH = 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6;
+    address public constant NonfungiblePositionManagerADDR = 0xC36442b4a4522E871399CD717aBDD847Ab11FE88;`
+
+    address public constant factoryAddress = 0x1F98431c8aD98523631AE4a59f267346ea31F984;
+    address private _owner;
+    
+    constructor() {
+        _owner = msg.sender;
+        NPM = INonfungiblePositionManager(NonfungiblePositionManagerADDR);
+        FACTORY = IUniswapV3Factory(factoryAddress);
+    }
+
+    modifier onlyOwner() {
+        msg.sender == _owner;
+        _;
+    }
+
+    function createPool(address tokenA, address tokenB, uint24 fee) external onlyOwner returns (address poolAddr) {
+       poolAddr = FACTORY.createPool(tokenA,tokenB,fee); 
+
+    }
+
+    function getPool(address tokenA, address tokenB, uint24 fee) external view returns (address poolAddr) {
+        poolAddr =  FACTORY.getPool(tokenA,tokenB,fee);
+    }
+
+    
+ /// @notice Calls the mint function defined in periphery, mints the same amount of each token. For this example we are providing 1000 DAI and 1000 USDC in liquidity
+    /// @param tokenA address of the first token in the pool
+  /// @param tokenB address of the second token in the pool 
+   /// @param amountAToMint amount of token0 to mint
+   /// @param amountBToMint amount of token1 to mint 
+    /// @return tokenId The id of the newly minted ERC721
+    /// @return liquidity The amount of liquidity for the position
+    /// @return amount0 The amount of token0
+    /// @return amount1 The amount of token1
+    function mintNewPosition(address tokenA, address tokenB,uint amountAToMint, uint amountBToMint)
+        external
+        returns (
+            uint256 tokenId,
+            uint128 liquidity,
+            uint256 amount0,
+            uint256 amount1
+        )
+    {
+
+        IERC20(tokenA).approve(NonfungiblePositionManagerADDR,amountAToMint);
+        IERC20(tokenB).approve(NonfungiblePositionManagerADDR,amountBToMint);
+
+        INonfungiblePositionManager.MintParams memory params =
+            INonfungiblePositionManager.MintParams({
+                token0: tokenA,
+                token1: tokenB,
+                fee: poolFee,
+                tickLower: TickMath.MIN_TICK,
+                tickUpper: TickMath.MAX_TICK,
+                amount0Desired: amountAToMint,
+                amount1Desired: amountBToMint,
+                amount0Min: 0,
+                amount1Min: 0,
+                recipient: address(this),
+                deadline: block.timestamp
+            });
+
+        // Note that the pool defined by DAI/USDC and fee tier 0.3% must already be created and initialized in order to mint
+        ///Question: how to initialize the other pools that I plan to create?
+        (tokenId, liquidity, amountA, amountB) = NPM.mint(params);
+
+        // Create a deposit
+        _createDeposit(msg.sender, tokenId);
+
+        // Remove allowance and refund in both assets.
+        if (amountA < amountAToMint) {
+            IERC20(tokenA).approve(NonfungiblePositionManagerADDR,0);
+            uint256 refundA = amountAToMint - amountA;
+            //transfer(address,uint256) function selector = 0xa9059cbb 
+            (bool success, ) = IERC20(tokenA).call(abi. encodeWithSelector(IERC20.transfer.selector, msg.sender,refundA);
+            require(success,"RefundA failed!");
+        }
+
+        if (amountB < amountBToMint) {
+            IERC20(tokenB).approve(NonfungiblePositionManagerADDR,0);
+            uint256 refundB = amountBToMint - amountB;
+            TransferHelper.safeTransfer(tokenB, msg.sender, refundB);
+            (bool success, ) = IERC20(tokenB).call(abi. encodeWithSelector(IERC20.transfer.selector, msg.sender,refundB);
+            require(success,"RefundB failed!");
+        }
+    }
+
+
+    function getTokenOfOwnerByIndex(address owner) function external returns (uint tokenId) {
+     uint balanceOfOwner = INonfungiblePositionManager(NonFungiblePositionManager) ;
+    }
+
+    function getGDAIAddress() external pure returns (address) {
+        return GDAI;
+    }
+
+
+    function getDAIAddress() external pure returns (address) {
+        return DAI;
+    }
+    function getWETHAddress() external pure returns (address) {
+        return WETH;
+    }
+
+    function getIONAddress() external pure returns (address) {
+        return ION;
+    }
+
+    function getWETHTestAddress() external pure returns (address) {
+        return WETH_TEST;
+    }
+}

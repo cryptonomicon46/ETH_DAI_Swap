@@ -168,3 +168,68 @@ File                     |  % Stmts | % Branch |  % Funcs |  % Lines |Uncovered 
 -------------------------|----------|----------|----------|----------|----------------|
 All files                |    77.17 |    46.97 |    70.15 |    79.38 |                |
 -------------------------|----------|----------|----------|----------|----------------|
+
+
+Goerli DAI/ION pool create pool transaction
+https://goerli.etherscan.io/tx/0xa5a63fb9de0a1e28e5d2001b4ffef409029a87a513bd4329ca6ad337fee0faac#eventlog
+Pool address 0x439b82465cf11b2417daa294C8754F8220039A7A
+1  0xa28Aae128E9193D659De6d25e4979499c41E9c19 (ION) -Created by Sandip Nallani
+2  0xdc31Ee1784292379Fbb2964b3B9C4124D8F89C60  (DAI) -Not created by me
+3. 0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4 (GDAI) -Created by Sandip Nallani
+4. 0x91761E31588ddB57386225055cE2B993Ae07081f (WETH-Test) -Created by Sandip Nallani 
+5. 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6  (WETH)
+mint() (NonFungiblePositionManager)
+https://goerli.etherscan.io/address/0xC36442b4a4522E871399CD717aBDD847Ab11FE88#writeContract
+
+
+    struct MintParams {
+        address token0;
+        address token1;
+        uint24 fee;
+        int24 tickLower;
+        int24 tickUpper;
+        uint256 amount0Desired;
+        uint256 amount1Desired;
+        uint256 amount0Min;
+        uint256 amount1Min;
+        address recipient;
+        uint256 deadline;
+    }
+
+
+
+    GDAI Goerli DAI Token on Goerli
+    Deploying GDAI contract with the account: 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021
+Deployer account 0xC5AE1dd3c4bBC7bD1f7260A4AC1758eb7c38C021 balance is '0.956202171462879795' ETH
+dgai contract depoloyed at  0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4
+
+
+npx hardhat verify --contract contracts/GDAI.sol:GDAI "0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4" --network goerli
+https://goerli.etherscan.io/address/0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4#code
+
+
+GDAI /WETH pool created using the NonFungiblePositionManager's 'createAndInitializePoolIfNecessary'
+Pool address 
+ 0x1aC7982148eb00d2AaE341326bbAA3952556C119
+MintParams (Mint a new position GDAI/WETH)
+(0x652Aa57D6f51F74605f8D6e78E0c54FE237A22f4,0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6,3000,-887272,-887272,100,0.01,0,0,0xC36442b4a4522E871399CD717aBDD847Ab11FE88,"")
+
+
+
+MintNewPosition on Goerli
+https://goerli.etherscan.io/address/0xc1Eb23E95f13B356318b642D591BF593b4a418Aa#code
+
+
+ION/GDAI Pool created
+ 0xC3f197daFB3c14923496ADD63B870Ee1CA20e2e3
+
+ ION/WETH Pool created
+ 0x5a29669fE3CbC95Ce6148e051F9dF90d6413F815
+
+
+ ION/DAI pool fee:3000
+ 0x439b82465cf11b2417daa294C8754F8220039A7A
+
+
+  ION/DAI pool fee:500
+ 0x98cfDA0Cc69ED7481c0943D6DAcA2D4e5fD0C774

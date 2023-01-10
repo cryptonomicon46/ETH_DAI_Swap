@@ -129,10 +129,13 @@ contract WETH is IWETH {
     /// @param spender  spender seeking an allowance on behalf on msg.sender
     /// @param amount the allowance amount
     /// @dev emits an approval event
+    /// @dev avoid race condition by only setting allowance if initial conditions are met
+
     function approve(
         address spender,
         uint amount
     ) external override returns (bool) {
+        require(amount ==0 || _allowance[msg.sender][spender]==0,"Initial approval condition not met!");
         _approve(msg.sender, spender, amount);
         return true;
     }

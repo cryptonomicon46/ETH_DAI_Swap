@@ -6,16 +6,16 @@ const { ethers } = require("hardhat");
 async function main() {
     const [deployer] = await ethers.getSigners();
   
-    console.log("\nDeploying FusionToken with the account:", deployer.address);
+    console.log("\nDeploying MintNewPosition contract with the account:", deployer.address);
     const deployerBal = await deployer.getBalance();
 
     // console.log("Account balance:", (await deployer.getBalance()).toString());
     console.log("Deployer account %s balance is %o ETH",deployer.address, ethers.utils.formatEther(deployerBal));
 
 
-    const FusionToken = await ethers.getContractFactory("FusionToken");
-    const fusionToken = await FusionToken.deploy();
-    console.log("Fusion token depoloyed at ", fusionToken.address);
+    const MintNewPosition = await ethers.getContractFactory("MintNewPosition");
+    const mintNewPosition = await MintNewPosition.deploy();
+    console.log("mintNewPosition contract depoloyed at ", mintNewPosition.address);
 
     console.log("\n");
 

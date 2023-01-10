@@ -2,6 +2,9 @@
 pragma solidity =0.7.6;
 
 
+/// @title IWETH contract interface that has all the ERC20 capabilities
+/// @author Sandip Nallani
+/// @notice This will be inherited by the WETH contract and then by the DepositAndWithdraw.sol contract to wrap/UnWrap user's ETH
 interface IWETH {
 
 

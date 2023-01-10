@@ -1,21 +1,20 @@
 
-// SPDX-License-Identifier: GPL-2.0-or-later
+// SPDX-License-Identifier: GPL-2.0-or-laterpragma solidity =0.7.6;
 pragma solidity =0.7.6;
-
 import "./IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "hardhat/console.sol";
 
 
-/// @title FusionToken contract mints ION tokens to the owner to create a UniSwapV3 pool later on
+/// @title GDAI is a Goerli DAI token mock of the DAI token. Will be minted to create a UniswapV3 pool for the owner
 /// @author Sandip Nallani
 /// @notice This will be used to create an ION/DAI pool on Uniswap V3
 /// @dev Some kind of ETH to DAI swap to be implemented using the ION/DAI pool 
-contract FusionToken is IERC20 {
+contract GDAI is IERC20 {
 
     using SafeMath for uint;
-    string private _name= "Fusion";
-    string private _symbol = "ION";
+    string private _name= "Goerli DAI Token";
+    string private _symbol = "GDAI";
     uint private _decimal = 18;
     address private _owner;
     uint private _totalSupply;
@@ -124,7 +123,7 @@ contract FusionToken is IERC20 {
         address dst,
         uint amount
     ) external override returns (bool) {
-        require(amount <= _allowance[src][msg.sender],"INSUFFICIENT_ALLOWANCE");
+        require(_allowance[src][msg.sender]> amount,"INSUFFICIENT_ALLOWANCE");
         _transfer(src,dst,amount);
         _approve(src, msg.sender, _allowance[src][msg.sender].sub(amount));
         return true;
@@ -165,12 +164,11 @@ contract FusionToken is IERC20 {
     /// @notice approve, sets approval for the spender on behalf on msg.sender for amount
     /// @param spender  spender seeking an allowance on behalf on msg.sender
     /// @param amount the allowance amount
-    /// @dev emits an approval event, prevent race condition checking initial approval =zero
+    /// @dev emits an approval event
     function approve(
         address spender,
         uint amount
     ) external override  returns (bool) {
-        require(amount ==0 || _allowance[msg.sender][spender]==0,"Initial approval condition not met!");
         _approve(msg.sender, spender, amount);
         return true;
     }

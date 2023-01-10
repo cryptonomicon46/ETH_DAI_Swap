@@ -226,6 +226,8 @@ it("Allowance Pass: Owner mints tokens, sets allowance for addr1, addr1 transfer
 })
 
 
+
+
 it("Allowance Transfer: Owner mints tokens, sets allowance for addr1, addr1 transfers to addr1 from Owner ", async function() {
 
     const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
@@ -246,6 +248,19 @@ it("Allowance Transfer: Owner mints tokens, sets allowance for addr1, addr1 tran
     
 })
 
+it("Allowance race condition check: Spender tries to set allowance twice with malicious intent", async function () {
+    const {fusionToken, owner,addr1} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+
+
+    await expect(fusionToken.approve(addr1.address,500)).
+    to.emit(fusionToken,"Approval");
+
+    await expect(fusionToken.approve(addr1.address,250)).
+    to.be.revertedWith("Initial approval condition not met!");
+    
+});
 
 
 it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
@@ -260,6 +275,8 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
 
     await expect(fusionToken.approve(addr1.address,500)).
     to.emit(fusionToken,"Approval");
+
+    
     
     const allowance_addr1 = await fusionToken.allowance(owner.address, addr1.address);
     expect(allowance_addr1).to.equal(500);
@@ -281,6 +298,45 @@ it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check
     expect(new_ownerBal).to.be.equal(750);
 
 })
+
+
+it("TransferFrom All: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await expect(fusionToken.connect(owner).mint(owner.address,1000)).
+    to.emit(fusionToken,"Transfer");
+    
+    const ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(ownerBal).to.be.equal(1000);
+
+
+    await expect(fusionToken.approve(addr1.address,500)).
+    to.emit(fusionToken,"Approval");
+
+    await expect(fusionToken.approve(addr1.address,250)).
+    to.be.revertedWith("Initial approval condition not met!");
+    
+    const allowance_addr1 = await fusionToken.allowance(owner.address, addr1.address);
+    expect(allowance_addr1).to.equal(500);
+
+    await expect(fusionToken.connect(addr1).transferFrom(owner.address, addr2.address, 500)).
+    to.emit(fusionToken,"Transfer");
+
+    const new_allowance_addr1 = await fusionToken.allowance(owner.address,addr1.address);
+    expect(new_allowance_addr1).to.equal(0);
+
+        
+    const addr2_bal = await fusionToken.balanceOf(addr2.address);
+    // console.log(ownerBal);
+    expect(addr2_bal).to.be.equal(500);
+
+
+    const new_ownerBal = await fusionToken.balanceOf(owner.address);
+    // console.log(ownerBal);
+    expect(new_ownerBal).to.be.equal(500);
+
+})
+
 
 
 it("Approve: Owner transfers to addr1, addr1 sets allowance for addr2, addr2 transfers back to owner", async function () {
