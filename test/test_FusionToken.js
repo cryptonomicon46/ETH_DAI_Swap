@@ -263,6 +263,43 @@ it("Allowance race condition check: Spender tries to set allowance twice with ma
 });
 
 
+it("TransferFrom zero amount: This should fail, as amount needs to be greater than zero", async function() {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await fusionToken.mint(owner.address,1000);
+
+    await fusionToken.connect(owner).approve(addr1.address,500);
+    await expect(fusionToken.connect(addr1).transferFrom(owner.address,addr2.address,0)).
+    to.be.revertedWith("INVALID_TRANSFER_AMOUNT");
+
+ 
+});
+
+it("TransferFrom incorrect dst: Should fail upon trying to transfer to invalid dst address", async function() {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await fusionToken.mint(owner.address,1000);
+
+    await fusionToken.connect(owner).approve(addr1.address,500);
+    await expect(fusionToken.connect(addr1).transferFrom(owner.address,ethers.constants.AddressZero,500)).
+    to.be.revertedWith("INVALID_DEST_ADDR");
+
+    await expect(fusionToken.connect(addr1).transferFrom(owner.address,owner.address,500)).
+    to.be.revertedWith("INVALID_DEST_ADDR");
+ 
+});
+
+
+it("TransferFrom incorrect src: Should fail upon trying to transfer from invalid src address(0)", async function() {
+    const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
+    await fusionToken.mint(owner.address,1000);
+
+    await fusionToken.connect(owner).approve(addr1.address,500);
+    await expect(fusionToken.connect(addr1).transferFrom(ethers.constants.AddressZero,addr2.address,500)).
+    to.be.revertedWith("INVALID_SRC_ADDR");
+ 
+});
+
+
+
 it("TransferFrom: Owner sets allowance to addr1, addr1 transfers to addr2, check all balances", async function () {
     const {fusionToken, owner,addr1,addr2} = await loadFixture(deployTokenFixture);
     await expect(fusionToken.connect(owner).mint(owner.address,1000)).

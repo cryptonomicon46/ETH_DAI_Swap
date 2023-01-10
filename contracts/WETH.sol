@@ -87,7 +87,12 @@ contract WETH is IWETH {
         address dst,
         uint wad
     ) external override returns (bool) {
+        require(src != address(0),"INVALID_SRC_ADDR");
+        require(wad>0, "INVALID_TRANSFER_AMOUNT");
+        require(src!= address(0),"INVALID_SRC_ADDR");
+
         require(wad <= _allowance[src][msg.sender],"INSUFFICIENT_ALLOWANCE!");
+        require(dst!= address(0) && dst != src, "INVALID_DST_ADDR");
         _transfer(src,dst,wad);
         _approve(src, msg.sender, _allowance[src][msg.sender].sub(wad));
         return true;

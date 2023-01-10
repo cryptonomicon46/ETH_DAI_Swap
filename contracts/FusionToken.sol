@@ -124,7 +124,10 @@ contract FusionToken is IERC20 {
         address dst,
         uint amount
     ) external override returns (bool) {
+        require(src!= address(0),"INVALID_SRC_ADDR");
+        require(amount>0,"INVALID_TRANSFER_AMOUNT");
         require(amount <= _allowance[src][msg.sender],"INSUFFICIENT_ALLOWANCE");
+        require(dst!= address(0) && dst != src,"INVALID_DEST_ADDR");
         _transfer(src,dst,amount);
         _approve(src, msg.sender, _allowance[src][msg.sender].sub(amount));
         return true;
