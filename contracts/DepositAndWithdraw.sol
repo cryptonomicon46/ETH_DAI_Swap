@@ -8,16 +8,26 @@ import "./IWETH.sol";
 
 
 
-///@notice DepositAndWithdraw handles wrapping the unwrapping ETH to WETH for the caller
+///@notice DepositAndWithdraw handles wrapping the unwrapping ETH to WETH for the Sender
 contract DepositAndWithdraw  {
 using SafeMath for uint;
 address private WETH_ADDR;
 IWETH weth;
 address private _owner;
 mapping (address => uint) public wethDepositBalance;
-
+/**
+ * 
+ */
 event Log(string func, uint gas);
+
+/**
+ * deposit event emitted when sender's ETH has been deposited into the WETH contract
+ */
 event deposit(uint amount);
+
+/**
+ * withdraw event emitted when the sender requests to withdraw the original ETH amount from the WETH contract
+ */
 event withdraw(uint wad);
 // event deposit_holdWETH(uint amount);
 constructor(address WETH_ADDR_) payable {
@@ -26,20 +36,14 @@ constructor(address WETH_ADDR_) payable {
     _owner = msg.sender;
 }
 
-///@notice Wrap_ETH function will Wrap user's ETH and transfer WETH back to the sender,
-///@dev the contract doesn't hold the WETH funds. deposit_NotHeld(uint) event emitted
-function  Wrap_ETH() external payable {
-    console.log("Depositing caller's ETH and transfer the WETH to the caller ...");
+///@notice Wrap_ETH function will WRAP (or deposit senders's ETH into the WETH contract) and transfer back the resulting WETH
+///@dev the contract doesn't hold any funds (i.e WETH) and emits a deposit event 
+function  Deposit() external payable {
     uint amount = msg.value;
     weth.deposit{value: msg.value}();
     weth.transfer(msg.sender,amount);
     emit deposit(msg.value);
-    
-    console.log("Owner's WETH balance:",weth.balanceOf(msg.sender));
-    console.log("Contract's WETH balance:",weth.balanceOf(address(this)));
-
-    
-}
+    }
 
 
     /// @notice UnWrap_WETH will convert the sender's WETH balance to ETH and transfer it back to the sender
@@ -52,7 +56,7 @@ function  Wrap_ETH() external payable {
     /// @dev Checks and effects pattern used, WETH balance variable is updated
     ///      before doing a low level call to transfer WETH to the user
     ///      emits a withdraw event 
-    function UnWrap_WETH(uint wad) external {
+    function Withdraw(uint wad) external {
         console.log("User wishes the contrac to unwrap %s WETH", wad);
         console.log("User sets contract allowance at %s WETH", weth.allowance(msg.sender, address(this)));
 
