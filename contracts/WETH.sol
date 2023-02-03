@@ -20,6 +20,16 @@ contract WETH is IWETH {
     uint private _totalSupply;
     mapping (address => uint) private _balance;
     mapping (address => mapping (address => uint)) private _allowance;
+    bool locked;
+    modifier noReentrancy(){
+        require(!locked,"Reentrant Call");
+        locked = true;
+        _;
+        locked = false;
+        _;
+
+    }
+
 
     constructor ()
     {       
@@ -91,7 +101,7 @@ contract WETH is IWETH {
         require(wad>0, "INVALID_TRANSFER_AMOUNT");
         require(src!= address(0),"INVALID_SRC_ADDR");
 
-        require(wad <= _allowance[src][msg.sender],"INSUFFICIENT_ALLOWANCE!");
+        require(_allowance[src][msg.sender]>= wad,"INSUFFICIENT_ALLOWANCE!");
         require(dst!= address(0) && dst != src, "INVALID_DST_ADDR");
         _transfer(src,dst,wad);
         _approve(src, msg.sender, _allowance[src][msg.sender].sub(wad));
@@ -174,25 +184,16 @@ contract WETH is IWETH {
     ///@dev emits a withdraw event, performs checks and effects to avoid reentrancy attacks
     function withdraw(uint wad) public override {
         require(_balance[msg.sender] >= wad,"NOTHING_TO_WITHDRAW");
-        uint bal =  _balance[msg.sender];
+
         _balance[msg.sender] =  _balance[msg.sender].sub(wad);
-        _sendETH(payable(msg.sender),bal);
-        // msg.sender.transfer(wad);
+          payable(msg.sender).transfer(wad);
         emit Withdraw(msg.sender, wad);
     }
 
-
-    ///@notice _sendETH internal function to handle sending ETH, emits Refund event
-    ///@param account: payable account that'll get the refund in ETH
-    ///@param amount: amount of ETH to be refunded to the account
-    function _sendETH(address payable account, uint amount) internal  {
-        (bool success, ) = payable(account).call{value: amount}("");
-        require(success, "FAILED_TO_SEND_FUNDS");
+    fallback() external  payable {
+       deposit();
     }
-
-    // ///@notice receive external payable, calls the internal _deposit function
-    // receive() external override payable{
-    //     _deposit();
-    // }
-
+    receive() external payable {
+  
+    }
 }

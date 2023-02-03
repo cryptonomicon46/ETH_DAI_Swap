@@ -3,95 +3,170 @@
 pragma solidity =0.7.6;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
 import "hardhat/console.sol";
 import "./IWETH.sol";
 
 
+/**
+ * @notice DepositAndWithdraw WRAPS and UNWRAPS ETH for the sender
+ * Wrapping ETH: Deposit the user's ETH into the WETH contract and transfer the WETH back to the user
+ * UNWrapping ETH: Withdraw user's original ETH based on the WETH balance
+ *
+ */
 
-///@notice DepositAndWithdraw handles wrapping the unwrapping ETH to WETH for the Sender
 contract DepositAndWithdraw  {
-using SafeMath for uint;
-address private WETH_ADDR;
-IWETH weth;
-address private _owner;
-mapping (address => uint) public wethDepositBalance;
-/**
- * 
- */
-event Log(string func, uint gas);
-
-/**
- * deposit event emitted when sender's ETH has been deposited into the WETH contract
- */
-event deposit(uint amount);
-
-/**
- * withdraw event emitted when the sender requests to withdraw the original ETH amount from the WETH contract
- */
-event withdraw(uint wad);
-// event deposit_holdWETH(uint amount);
-constructor(address WETH_ADDR_) payable {
-    WETH_ADDR = WETH_ADDR_;
-    weth = IWETH(WETH_ADDR);
-    _owner = msg.sender;
-}
-
-///@notice Wrap_ETH function will WRAP (or deposit senders's ETH into the WETH contract) and transfer back the resulting WETH
-///@dev the contract doesn't hold any funds (i.e WETH) and emits a deposit event 
-function  Deposit() external payable {
-    uint amount = msg.value;
-    weth.deposit{value: msg.value}();
-    weth.transfer(msg.sender,amount);
-    emit deposit(msg.value);
-    }
-
-
-    /// @notice UnWrap_WETH will convert the sender's WETH balance to ETH and transfer it back to the sender
-    /// @dev Checks and effects pattern used, balances variables are updated
-    ///      before doing a low level call to transfer the sender's ETH funds
-
-
-    /// @notice UnWrap_WETH will convert some of the sender's WETH balance to ETH and transfer it back to the sender
-   /// @param wad amount of WETH user balance converted back to ETH
-    /// @dev Checks and effects pattern used, WETH balance variable is updated
-    ///      before doing a low level call to transfer WETH to the user
-    ///      emits a withdraw event 
-    function Withdraw(uint wad) external {
-        console.log("User wishes the contrac to unwrap %s WETH", wad);
-        console.log("User sets contract allowance at %s WETH", weth.allowance(msg.sender, address(this)));
-
-        require(weth.balanceOf(msg.sender)>= wad, "INSUFFICIENT_USER_WETH_FUNDS!");
-            weth.transferFrom(msg.sender, address(this),wad);
-            console.log("Contract's WETH balance:", weth.balanceOf(address(this)));
-            weth.withdraw(wad);
-            console.log("Contract's ETH balance:",address(this).balance);
-
-            // wethDepositBalance[msg.sender] = wethDepositBalance[msg.sender].sub(wad);
-            safeTransferETH(payable(msg.sender),wad);
-            emit withdraw(wad);
-    }
-    // // Function to receive Ether. msg.data must be empty
-    receive() external payable {}
-
-    ///@notice safeTransferETH internal function performs the low level call function
-    function safeTransferETH(address payable to, uint256 value) internal {
-        (bool success, ) = to.call{value: value}(new bytes(0));
-        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
-    }
+    using SafeMath for uint256;
+    address private WETH_ADDR;
+    bool internal _locked;
+    IWETH weth;
+    address private _owner;
 
 
 
+    /**
+     * userETHBal holds the cumulative balance for the user to withdraw
+     */
+    mapping (address => uint256) public userETHBal;
 
-    ///@notice checks if the msg.sender is the owner who deployed this contract
+    /**
+     * Deposited event emitted when sender's ETH has been deposited into the WETH contract
+     */
+    event Deposited(uint amount);
+
+    /**
+     * withdraw event emitted when the sender requests to withdraw the original ETH amount from the WETH contract
+     */
+    event withdraw(uint wad);
+    /**
+     * SafeWithdraw emitted when the owner withdraws his/her ETH
+     */
+    event SafeWithdraw(address _to, uint256 value);
+
+
+    /**
+     * modifier to check if msg.sender is the owner of the contract
+     */
     modifier onlyOwner() {
         require(_owner == msg.sender, "Caller is not the owner");
         _;
     }
 
+    /**
+     * Reentrancy guard modifier
+     */
+
+    modifier noReentrancy() {
+        _locked = true;
+        _;
+        _locked = false;
+    }
+    constructor(address WETH_ADDR_) payable {
+        WETH_ADDR = WETH_ADDR_;
+        weth = IWETH(WETH_ADDR);
+        _owner = msg.sender;
+    }
+
+
+    /**
+     * @notice Deposit function will WRAP (or deposit senders's 
+     * ETH into the WETH contract) and transfer back the resulting WETH
+     * 
+     * @dev emits a deposit event 
+     */
+    function  Deposit() external payable {
+        uint amount = msg.value;
+        weth.deposit{value: msg.value}();
+        weth.transfer(msg.sender,amount);
+        emit Deposited(msg.value);
+        }
+
+
+    /**
+     *  @notice Withdraw will convert the sender's WETH balance to ETH and transfer it back to the sender
+     * @param wad is the amount the user wishes to withdraw
+     * @dev Checks and effects pattern used, balances variables are updated
+     * before doing a low level call to transfer the sender's ETH funds
+     * 
+     */
+    function Withdraw(uint256 wad) external {
+        require(weth.balanceOf(msg.sender)>= wad, "DepositAndWithdraw: Insufficient WETH balance in the WETH contract!");
+        weth.transferFrom(msg.sender, address(this),wad);
+        weth.withdraw(wad);
+        userETHBal[msg.sender] = userETHBal[msg.sender].add(wad);
+        emit withdraw(wad);
+    }
+
+
+    /**
+     *  @notice safeWithdraw is a Reentrancy guarded function that allows the user to withdraw the ETH balances
+     * @param value is the amount of ETH in balance that the user wishes to withdraw
+     * @dev Checks and effects pattern used, balances variables are updated
+     * before doing a low level call to transfer the sender's ETH funds
+     * 
+     */  
+ function safeWithdraw( uint256 value) external payable noReentrancy returns (bool) {
+        require( value<= address(this).balance, "DepositAndWithdraw: Insufficient ETH Balance in the contract!");
+        userETHBal[msg.sender] = userETHBal[msg.sender].sub(value);
+        (bool success, ) = payable(msg.sender).call{value: value}(new bytes(0));
+        require(success, 'TransferHelper::safeTransferETH: ETH transfer failed');
+        emit SafeWithdraw(msg.sender, value);
+        return true;
+    }
+
+
+    /**
+     * getUserETHBalance returns the user's ETH balance to be withdrawn 
+     */
+    function getUserETHBalance() external view onlyOwner returns (uint256) {
+        return (userETHBal[msg.sender]);
+    }
+
+    /**
+     * getContractETHBalance returns this contracts ETH balance 
+     */
+    function getContractETHBalance() external view onlyOwner returns (uint256) {
+        return (address(this).balance);
+    }
+
+
+    /**
+     * getContractWETHBalance returns the WETH balance of this contract
+     */
+    function getContractWETHBalance() external view returns (uint256) {
+        return _wethBal(address(this));
+    }
+
+
+    /**
+     * getWETHBalance returns the WETH balance of the contract
+     * @param account, balance of account address is returned
+     */
+    function getWETHBalance(address account) external view returns (uint256) {
+        return _wethBal(account);
+    }
 
 
 
-    ///@notice getWETHAddr returns the WETH token address
+    /**
+     * getETHBalance retrieves the ETH balance of the account
+     * @param account is the account address
+     */
+    function getETHBalance(address account) external view returns (uint256) {
+        return account.balance;
+    }
+
+    /**
+     * Internal function that queries the WETH balance for an account
+     */
+    function _wethBal(address account) internal view returns (uint256) {
+        return weth.balanceOf(account);
+    }
+
+
+    /**
+     * getWETHAddr returns the address of the WETH mainnet or testnet contract address passed into the constructor of this contract.
+     */
     function getWETHAddr() external view returns (address) {
         return WETH_ADDR;
     }
@@ -100,36 +175,5 @@ function  Deposit() external payable {
     function getOwner() external view returns (address) {
         return _owner;
     }
-
-
-        ///@notice getContractETHBalance , returns the ETH balance of the contract
-    ///@dev onlyOwner modifier ensures that only the deployer can make this query
-    function getContractETHBalance() external view onlyOwner returns (uint) {
-        return (address(this).balance);
-    }
-
-        ///@notice getContractWETHBalance , returns the balance of the contract
-    ///@dev onlyOwner modifier ensures that only the deployer can make this query
-    function getContractWETHBalance() external view onlyOwner returns (uint) {
-        return _wethBal(address(this));
-    }
-
-
-    ///@notice getWETHBalance , returns the WETH balance of the contract
-    ///@param account, balance of account address is returned
-    function getWETHBalance(address account) external view returns (uint) {
-        return _wethBal(account);
-    }
-
-
-    ///@notice getETHBalance , returns the WETH balance of the contract
-    ///@param account, balance of account address is returned
-    function getETHBalance(address account) external view returns (uint) {
-        return account.balance;
-    }
-
-
-  function _wethBal(address account) internal view returns (uint) {
-    return weth.balanceOf(account);
-  }
+  receive() external payable {}
 }
